@@ -16,7 +16,8 @@ The site is aimed at travelers (particularly women and solo travelers) who want:
 
 ## 2. Features
 
-- **Context-aware route recommendation** — choose "Day," "After dark," or "Event" context; the app adjusts its relative safety score and route notes accordingly.
+- **Live interactive map with best-route selection** — powered by [Leaflet](https://leafletjs.com/) + OpenStreetMap tiles. When you set a From/To (typed address or "Current location") and tap **Recommend best route**, the app geocodes both points, fetches multiple possible routes, scores them with the context-aware heuristic (distance + turn count + day/after-dark weighting), and draws all options on the map — the recommended route in solid pink, other options in dashed grey. The map, ETA, and offline text directions all update together whenever the location changes.
+- **Context-aware route recommendation** — choose "Day," "After dark," or "Event" context; the app adjusts its relative safety score, route notes, and which route option is chosen accordingly.
 - **Current-location detection** — uses the browser Geolocation API to fill in the "From"/"To" fields and to power nearby-help lookups.
 - **Nearby police & hospital lookup** — queries OpenStreetMap's Overpass API for the nearest police station and hospital around the user's coordinates, with distance calculated via the haversine formula. Falls back to an offline/demo message if the lookup fails.
 - **Safety score breakdown** — a visual score (lighting, transit, accessibility, community signals) for the recommended route.
@@ -27,7 +28,14 @@ The site is aimed at travelers (particularly women and solo travelers) who want:
 - **Online/offline status indicator** in the navigation bar.
 - **Responsive layout** for mobile and desktop, with a PWA-style `manifest.json` for "add to home screen" support.
 
-All of the above features from the original prototype have been preserved exactly as provided — no functionality was removed.
+All of the above features from the original prototype have been preserved — no functionality was removed. The live map and routing were added on top of the existing behavior; if the routing/geocoding services are unreachable (offline, blocked, rate-limited), the app automatically falls back to the original simulated text-only recommendation so the site still works.
+
+**Services used for the map (no API key required, but rate-limited public demo endpoints):**
+- Map tiles: OpenStreetMap tile servers.
+- Geocoding (turning typed addresses into coordinates): [Nominatim](https://nominatim.org/) public API.
+- Routing (turn-by-turn walking directions and alternatives): the OpenStreetMap.de public [OSRM](https://project-osrm.org/) "routed-foot" demo server.
+
+These are free public demo services intended for light, occasional use — see [Limitations](#limitations-of-automatic-guardian-sms) and the note below on production readiness.
 
 ## 3. How to Run Locally
 
@@ -81,7 +89,15 @@ The included `.nojekyll` file tells GitHub Pages to skip Jekyll processing, whic
 
 No further configuration, build step, or server-side code is required — the entire app is a single static `index.html` plus `manifest.json`.
 
-## 5. Limitations of Automatic Guardian SMS
+## 5. Limitations of the Live Map & Route Recommendation
+
+- **Public demo services, not production infrastructure.** Geocoding (Nominatim) and routing (OSRM "routed-foot" demo) are free, keyless public endpoints meant for light/occasional use. They are rate-limited and can be slow or briefly unavailable — this is expected behavior for a static, no-backend prototype, not a bug.
+- **"Safety" scoring is a heuristic, not real safety data.** The app does not have access to real lighting, crime, or crowd-density data. The route score is calculated from distance and estimated turn count, with a configurable bias toward shorter/simpler routes when "After dark" is selected. It is a stand-in for what a real implementation would compute from verified safety datasets.
+- **Walking directions only.** The routing profile used is pedestrian ("foot"), matching the product's focus on personal safety while walking; it is not meant for driving directions.
+- **Graceful fallback.** If geocoding or routing fails (no internet, service downtime, an address that can't be resolved), the app automatically reverts to the original simulated route summary so the rest of the site (offline text route, emergency features, guardian alerts) keeps working.
+- **For production use**, replace the demo geocoding/routing endpoints with a paid or self-hosted provider (e.g., Mapbox, Google Maps Platform, OpenRouteService, or a self-hosted OSRM/Valhalla instance) with proper API keys and rate limits, and feed the safety score from a real lighting/incident/community-reports dataset instead of the current heuristic.
+
+## 6. Limitations of Automatic Guardian SMS
 
 The Trusted Guardian feature is intentionally scoped as a **client-side demo** and has important limitations that should be understood before relying on it:
 

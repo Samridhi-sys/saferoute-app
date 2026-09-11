@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#9f2555">
 <title>SafeRoute AI — Vibeathon Website</title>
 <link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 <style>
 :root{--pink:#c83d6b;--deep:#3a202b;--soft:#faeef3;--line:#eadde3;--green:#26815b;--red:#c6283f;--muted:#766670}
 *{box-sizing:border-box}body{margin:0;background:#f5f0f2;color:var(--deep);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
@@ -24,13 +26,17 @@ button{border:0;border-radius:13px;padding:12px 15px;font-weight:800;cursor:poin
 .place{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line)}.place:last-child{border-bottom:0}.place small{color:var(--muted)}.call{background:#f0f7f4;color:var(--green)}
 .offline{background:#fff7e8;border:1px solid #f0d59e;color:#805915;padding:12px;border-radius:13px;margin-top:12px;font-size:12px}
 .textroute{line-height:1.7;background:#2e2429;color:#fff;border-radius:15px;padding:15px;font-size:13px;white-space:pre-line}
+#mapView{height:360px;border-radius:16px;overflow:hidden;background:#eee5e8}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 @media(max-width:800px){.grid{grid-template-columns:1fr}.nav a{display:none}.hero h1{font-size:31px}.why{grid-template-columns:1fr}.container{padding:15px 12px 50px}}
 </style>
 </head>
 <body>
 <nav class="nav">
- <div class="logo">◈ SafeRoute AI</div><a href="#route">Route</a><a href="#safety">Safety</a><a href="#nearby">Nearby help</a><a href="#offline">Offline</a>
+ <div class="logo">◈ SafeRoute AI</div><a href="#route">Route</a><a href="#mapSection">Map</a><a href="#safety">Safety</a><a href="#nearby">Nearby help</a><a href="#offline">Offline</a>
  <div class="spacer"></div><span id="onlineState">● Online</span>
 </nav>
 
@@ -74,6 +80,16 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
  </div>
 </section>
 </div>
+
+<section class="card" id="mapSection" style="margin-top:18px">
+ <h2>🗺️ Live route map</h2>
+ <div id="mapView"></div>
+ <div class="status" id="mapStatus">Set a From/To location (or use Current location), then tap "Recommend best route" — the map will update and highlight the safest option found.</div>
+ <div class="legend">
+  <span><i style="background:var(--pink)"></i>Recommended route</span>
+  <span><i style="background:#b9a7ae;border-top:2px dashed #b9a7ae;height:0"></i>Other option considered</span>
+ </div>
+</section>
 
 <section class="card" id="safety" style="margin-top:18px">
  <h2>Recommended route</h2>
@@ -141,7 +157,75 @@ function useLocation(field){
    document.getElementById(field).value='Current location ('+pos.coords.latitude.toFixed(4)+', '+pos.coords.longitude.toFixed(4)+')';
    document.getElementById('locationStatus').textContent='Current location detected. Finding nearby emergency services…';
    findNearby(current.lat,current.lon);
+   ensureMap();
+   setMarker(field,current.lat,current.lon,(field==='from'?'From':'To')+': current location');
  },()=>{document.getElementById('locationStatus').textContent='Location permission was not granted. You can still use the demo route.';},{enableHighAccuracy:!batteryMode,maximumAge:batteryMode?300000:60000,timeout:10000});
+}
+
+/* ---- Live map + best-route recommendation ---- */
+let map,fromMarker,toMarker,routeLayers=[];
+function ensureMap(){
+ if(map) return map;
+ map=L.map('mapView',{scrollWheelZoom:false}).setView([28.6139,77.2090],12);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+ return map;
+}
+function setMarker(which,lat,lon,label){
+ ensureMap();
+ const m=L.marker([lat,lon]).addTo(map).bindPopup(label||which);
+ if(which==='from'){ if(fromMarker) map.removeLayer(fromMarker); fromMarker=m; }
+ else { if(toMarker) map.removeLayer(toMarker); toMarker=m; }
+ fitToMarkers();
+}
+function fitToMarkers(){
+ const pts=[fromMarker,toMarker].filter(Boolean).map(m=>m.getLatLng());
+ if(pts.length===2) map.fitBounds(L.latLngBounds(pts),{padding:[40,40]});
+ else if(pts.length===1) map.setView(pts[0],14);
+}
+function clearRoutes(){ routeLayers.forEach(l=>map.removeLayer(l)); routeLayers=[]; }
+async function geocode(text){
+ const m=text.match(/Current location \(([-\d.]+),\s*([-\d.]+)\)/);
+ if(m) return {lat:parseFloat(m[1]),lon:parseFloat(m[2])};
+ const url='https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(text);
+ const r=await fetch(url,{headers:{'Accept':'application/json'}});
+ const d=await r.json();
+ if(!d||!d.length) throw new Error('Location not found: '+text);
+ return {lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon)};
+}
+async function fetchAlternateRoutes(a,b){
+ const url=`https://routing.openstreetmap.de/routed-foot/route/v1/foot/${a.lon},${a.lat};${b.lon},${b.lat}?alternatives=true&overview=full&geometries=geojson&steps=true`;
+ const r=await fetch(url);
+ const d=await r.json();
+ if(d.code!=='Ok'||!d.routes||!d.routes.length) throw new Error('No route found');
+ return d.routes;
+}
+function scoreRoute(route,afterDark){
+ const distKm=route.distance/1000;
+ const turns=route.legs?.[0]?.steps?.length||6;
+ const base=96-turns*1.3-distKm*(afterDark?2.2:1.4);
+ return Math.max(45,Math.min(97,Math.round(base)));
+}
+function stepsToText(route){
+ const steps=route.legs?.[0]?.steps||[];
+ if(!steps.length) return null;
+ const lines=steps.map((s,i)=>{
+   const name=s.name&&s.name.length?` onto ${s.name}`:'';
+   const type=s.maneuver?.type||'continue';
+   const verb=type==='depart'?'Start':type==='arrive'?'Arrive at destination':`Continue${name}`;
+   return `${i+1}. ${verb}`;
+ });
+ return lines.join('\n')+'\nIf internet is unavailable, follow this saved text route and call 112 for emergencies.';
+}
+function drawRoutes(routes,bestIdx){
+ clearRoutes();
+ routes.forEach((rt,i)=>{
+   const latlngs=rt.geometry.coordinates.map(c=>[c[1],c[0]]);
+   const isBest=i===bestIdx;
+   const line=L.polyline(latlngs,{color:isBest?'#c83d6b':'#b9a7ae',weight:isBest?6:3,opacity:isBest?0.95:0.6,dashArray:isBest?null:'6,6'}).addTo(map);
+   if(!isBest) line.bringToBack();
+   routeLayers.push(line);
+ });
+ map.fitBounds(L.latLngBounds(routes[bestIdx].geometry.coordinates.map(c=>[c[1],c[0]])),{padding:[30,30]});
 }
 async function findNearby(lat,lon){
  try{
@@ -163,20 +247,53 @@ async function findNearby(lat,lon){
 }
 function policeLat(x){return x.lat??x.center.lat} function policeLon(x){return x.lon??x.center.lon}
 function distance(a,b,c,d){const R=6371,p=Math.PI/180,x=(c-a)*p,y=(d-b)*p;const z=Math.sin(x/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(y/2)**2;return (R*2*Math.atan2(Math.sqrt(z),Math.sqrt(1-z))).toFixed(1);}
-function recommend(){
+async function recommend(){
  const after=[...document.querySelectorAll('.chip')].find(x=>x.classList.contains('active'))?.textContent==='After dark';
- const score=after?91:87;
- document.getElementById('score').textContent=score;
- document.getElementById('scorebar').style.width=score+'%';
- document.getElementById('routeTitle').textContent=after?'After-dark context route':'Context-aware recommended route';
- document.getElementById('routeMeta').textContent=(batteryMode?'Low-battery text-first · ':'')+'ETA ~22 min · relative context score '+score+'/100';
- document.getElementById('textRoute').textContent=`1. Start: ${document.getElementById('from').value}
-2. Continue toward ${document.getElementById('to').value}.
+ const fromText=document.getElementById('from').value;
+ const toText=document.getElementById('to').value;
+ document.getElementById('locationStatus').textContent='Finding the safest route…';
+ try{
+   ensureMap();
+   const a=await geocode(fromText);
+   const b=await geocode(toText);
+   setMarker('from',a.lat,a.lon,'From: '+fromText);
+   setMarker('to',b.lat,b.lon,'To: '+toText);
+   const routes=await fetchAlternateRoutes(a,b);
+   const scored=routes.map(rt=>scoreRoute(rt,after));
+   let bestIdx=0; for(let i=1;i<scored.length;i++) if(scored[i]>scored[bestIdx]) bestIdx=i;
+   const best=routes[bestIdx], score=scored[bestIdx];
+   drawRoutes(routes,bestIdx);
+   document.getElementById('score').textContent=score;
+   document.getElementById('scorebar').style.width=score+'%';
+   document.getElementById('routeTitle').textContent=after?'After-dark context route':'Context-aware recommended route';
+   const etaMin=Math.round(best.duration/60);
+   document.getElementById('routeMeta').textContent=(batteryMode?'Low-battery text-first · ':'')+`ETA ~${etaMin} min · ${routes.length} route${routes.length>1?'s':''} compared · relative context score ${score}/100`;
+   const stepsText=stepsToText(best)||`1. Start: ${fromText}
+2. Continue toward ${toText}.
 3. Prefer the better-lit public/transit corridor from the saved recommendation.
 4. Keep the destination and nearby emergency services visible.
 5. If internet is unavailable, follow this saved text route and call 112 for emergencies.`;
- localStorage.setItem('saferoute-last-route',document.getElementById('textRoute').textContent);
- document.getElementById('offlineNotice').textContent='Route summary saved locally on this device.';
+   document.getElementById('textRoute').textContent=stepsText;
+   localStorage.setItem('saferoute-last-route',stepsText);
+   document.getElementById('offlineNotice').textContent='Route summary saved locally on this device.';
+   document.getElementById('locationStatus').textContent=`Map updated — comparing ${routes.length} route option${routes.length>1?'s':''}, best one highlighted.`;
+   document.getElementById('mapStatus').textContent=`Pink solid line = recommended route.${routes.length>1?' Grey dashed = alternative(s) considered.':''}`;
+ }catch(e){
+   const score=after?91:87;
+   document.getElementById('score').textContent=score;
+   document.getElementById('scorebar').style.width=score+'%';
+   document.getElementById('routeTitle').textContent=after?'After-dark context route':'Context-aware recommended route';
+   document.getElementById('routeMeta').textContent=(batteryMode?'Low-battery text-first · ':'')+'ETA ~22 min · relative context score '+score+'/100 (offline estimate)';
+   const stepsText=`1. Start: ${fromText}
+2. Continue toward ${toText}.
+3. Prefer the better-lit public/transit corridor from the saved recommendation.
+4. Keep the destination and nearby emergency services visible.
+5. If internet is unavailable, follow this saved text route and call 112 for emergencies.`;
+   document.getElementById('textRoute').textContent=stepsText;
+   localStorage.setItem('saferoute-last-route',stepsText);
+   document.getElementById('offlineNotice').textContent='Route summary saved locally on this device (live map/routing unavailable).';
+   document.getElementById('locationStatus').textContent='Could not reach the live map/routing service — showing an offline estimate instead.';
+ }
 }
 function saveRoute(){localStorage.setItem('saferoute-last-route',document.getElementById('textRoute').textContent);document.getElementById('offlineNotice').textContent='✓ Saved. This text remains available without internet.';}
 window.addEventListener('online',()=>document.getElementById('onlineState').textContent='● Online');
