@@ -1,0 +1,9 @@
+{
+  "name":"SafeRoute AI",
+  "short_name":"SafeRoute",
+  "start_url":"./",
+  "display":"standalone",
+  "background_color":"#f5f0f2",
+  "theme_color":"#9f2555",
+  "description":"Context-aware travel safety website prototype"
+}
