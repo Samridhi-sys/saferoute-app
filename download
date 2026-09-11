@@ -1,0 +1,35 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node (in case of future tooling: linters, bundlers, local servers)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build/output artifacts (if a bundler is added later)
+dist/
+build/
+.cache/
+
+# Logs
+*.log
+
+# Environment/config secrets
+.env
+.env.local
+.env.*.local
+
+# Zip archives created for distribution
+*.zip
