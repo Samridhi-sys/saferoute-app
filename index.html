@@ -205,13 +205,31 @@ function scoreRoute(route,afterDark){
  const base=96-turns*1.3-distKm*(afterDark?2.2:1.4);
  return Math.max(45,Math.min(97,Math.round(base)));
 }
+function maneuverVerb(s){
+ const type=s.maneuver?.type||'continue';
+ const modifier=s.maneuver?.modifier||'';
+ if(type==='depart') return 'Start';
+ if(type==='arrive') return 'Arrive at destination';
+ if(type==='roundabout'||type==='rotary'){
+   const exit=s.maneuver?.exit;
+   return exit?`At the roundabout, take exit ${exit}`:'Enter the roundabout';
+ }
+ if(modifier.includes('uturn')) return 'Make a U-turn';
+ if(modifier==='sharp left') return 'Turn sharply left';
+ if(modifier==='left') return 'Turn left';
+ if(modifier==='slight left') return 'Turn slightly left';
+ if(modifier==='sharp right') return 'Turn sharply right';
+ if(modifier==='right') return 'Turn right';
+ if(modifier==='slight right') return 'Turn slightly right';
+ if(modifier==='straight') return 'Continue straight';
+ return 'Continue';
+}
 function stepsToText(route){
  const steps=route.legs?.[0]?.steps||[];
  if(!steps.length) return null;
  const lines=steps.map((s,i)=>{
    const name=s.name&&s.name.length?` onto ${s.name}`:'';
-   const type=s.maneuver?.type||'continue';
-   const verb=type==='depart'?'Start':type==='arrive'?'Arrive at destination':`Continue${name}`;
+   const verb=`${maneuverVerb(s)}${name}`;
    return `${i+1}. ${verb}`;
  });
  return lines.join('\n')+'\nIf internet is unavailable, follow this saved text route and call 112 for emergencies.';
@@ -269,7 +287,7 @@ async function recommend(){
    const etaMin=Math.round(best.duration/60);
    document.getElementById('routeMeta').textContent=(batteryMode?'Low-battery text-first · ':'')+`ETA ~${etaMin} min · ${routes.length} route${routes.length>1?'s':''} compared · relative context score ${score}/100`;
    const stepsText=stepsToText(best)||`1. Start: ${fromText}
-2. Continue toward ${toText}.
+2. Turn as needed at each junction, heading toward ${toText}.
 3. Prefer the better-lit public/transit corridor from the saved recommendation.
 4. Keep the destination and nearby emergency services visible.
 5. If internet is unavailable, follow this saved text route and call 112 for emergencies.`;
@@ -285,7 +303,7 @@ async function recommend(){
    document.getElementById('routeTitle').textContent=after?'After-dark context route':'Context-aware recommended route';
    document.getElementById('routeMeta').textContent=(batteryMode?'Low-battery text-first · ':'')+'ETA ~22 min · relative context score '+score+'/100 (offline estimate)';
    const stepsText=`1. Start: ${fromText}
-2. Continue toward ${toText}.
+2. Turn as needed at each junction, heading toward ${toText}.
 3. Prefer the better-lit public/transit corridor from the saved recommendation.
 4. Keep the destination and nearby emergency services visible.
 5. If internet is unavailable, follow this saved text route and call 112 for emergencies.`;
