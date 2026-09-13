@@ -21,9 +21,9 @@ label{font-size:12px;color:var(--muted);font-weight:800;display:block;margin:13p
 input{width:100%;border:1px solid var(--line);background:#faf7f8;border-radius:13px;padding:13px;outline:none;font-size:14px;color:var(--deep)}
 button{border:0;border-radius:13px;padding:12px 15px;font-weight:800;cursor:pointer}.loc{background:#f6e6ec;color:#9f2555;white-space:nowrap}.primary{background:var(--pink);color:#fff;width:100%;margin-top:15px}.toggle{display:flex;align-items:center;justify-content:space-between;background:#f9f3f5;padding:12px 14px;border-radius:14px;margin-top:14px}.switch{width:45px;height:25px;background:#bbb;border-radius:20px;padding:3px}.switch i{display:block;width:19px;height:19px;background:white;border-radius:50%;transition:.2s}.switch.on{background:var(--green)}.switch.on i{transform:translateX(20px)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}.chip{background:#f8eef2;color:#704957}.chip.active{outline:2px solid var(--pink)}
-.status{font-size:12px;color:var(--muted);margin-top:10px}.route{margin-top:15px;padding:15px;border:1px solid var(--line);border-radius:17px}.routehead{display:flex;justify-content:space-between}.score{color:var(--green);font-size:24px;font-weight:900}.bar{height:8px;background:#eee5e8;border-radius:8px;margin:10px 0;overflow:hidden}.bar span{display:block;height:100%;width:87%;background:var(--pink)}.why{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mini{background:#faf5f7;border-radius:12px;padding:11px;font-size:12px}.good{color:var(--green);font-weight:800}.warn{color:#a66a17;font-weight:800}
+.status{font-size:12px;color:var(--muted);margin-top:10px}.route{margin-top:15px;padding:15px;border:1px solid var(--line);border-radius:17px}.routehead{display:flex;justify-content:space-between}.score{color:var(--green);font-size:24px;font-weight:900}.bar{height:8px;background:#eee5e8;border-radius:8px;margin:10px 0;overflow:hidden}.bar span{display:block;height:100%;width:87%;background:var(--pink)}.whysummary{font-size:13px;color:var(--deep);background:#faf5f7;border-radius:12px;padding:11px 13px;margin-bottom:10px;line-height:1.5}.why{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mini{background:#faf5f7;border-radius:12px;padding:11px;font-size:12px}.mini .rag{font-size:11px;margin-top:3px}.good{color:var(--green);font-weight:800}.warn{color:#a66a17;font-weight:800}.bad{color:var(--red);font-weight:800}
 .emergency{background:#b82038;color:#fff;border-radius:18px;padding:17px;display:flex;align-items:center;gap:13px}.emergency .big{font-size:18px;font-weight:900}.emergency button{background:#fff;color:#a61e34}.help{display:flex;gap:10px;margin-top:10px}.help a{flex:1;text-align:center;text-decoration:none;background:#fff1f3;color:#a61e34;padding:12px;border-radius:12px;font-weight:800;font-size:13px}
-.place{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line)}.place:last-child{border-bottom:0}.place small{color:var(--muted)}.call{background:#f0f7f4;color:var(--green)}
+.place{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);gap:10px}.place:last-child{border-bottom:0}.place small{color:var(--muted)}.call{background:#f0f7f4;color:var(--green)}.placeaction{display:flex;flex-direction:column;align-items:flex-end;gap:6px}.calllink{color:var(--pink);text-decoration:none;font-weight:800;font-size:13px;white-space:nowrap}
 .offline{background:#fff7e8;border:1px solid #f0d59e;color:#805915;padding:12px;border-radius:13px;margin-top:12px;font-size:12px}
 .textroute{line-height:1.7;background:#2e2429;color:#fff;border-radius:15px;padding:15px;font-size:13px;white-space:pre-line}
 #mapView{height:360px;border-radius:16px;overflow:hidden;background:#eee5e8}
@@ -74,8 +74,20 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 
  <div class="card" id="nearby" style="margin-top:15px">
   <h2>Always-visible nearby help</h2>
-  <div class="place"><div>👮 <b id="policeName">Nearest police station</b><br><small id="policeDistance">Waiting for location…</small></div><button class="call" onclick="callNumber('112')">Call</button></div>
-  <div class="place"><div>🏥 <b id="hospitalName">Nearest hospital</b><br><small id="hospitalDistance">Waiting for location…</small></div><button class="call" onclick="callNumber('112')">Emergency</button></div>
+  <div class="place">
+   <div>👮 <b id="policeName">Nearest police station</b><br><small id="policeDistance">Waiting for location…</small></div>
+   <div class="placeaction">
+    <button class="call" onclick="callNumber(policeNumber)">Call</button>
+    <a class="calllink" id="policeNumberLink" href="tel:100">100</a>
+   </div>
+  </div>
+  <div class="place">
+   <div>🏥 <b id="hospitalName">Nearest hospital</b><br><small id="hospitalDistance">Waiting for location…</small></div>
+   <div class="placeaction">
+    <button class="call" onclick="callNumber(hospitalNumber)">Emergency</button>
+    <a class="calllink" id="hospitalNumberLink" href="tel:102">102</a>
+   </div>
+  </div>
   <div class="status">For a real deployment, these cards should be populated from a verified local places/health-service database.</div>
  </div>
 </section>
@@ -96,11 +108,12 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
  <div class="route">
   <div class="routehead"><div><b id="routeTitle">SafeRoute recommendation</b><br><span class="status" id="routeMeta">Context-aware route</span></div><div class="score" id="score">87</div></div>
   <div class="bar"><span id="scorebar"></span></div>
-  <div class="why">
-   <div class="mini">💡 <b>Lighting</b><br><span class="good">Better-lit segments</span></div>
-   <div class="mini">🚇 <b>Transport</b><br><span class="good">Transit nearby</span></div>
-   <div class="mini">♿ <b>Accessibility</b><br><span class="good">Public access points</span></div>
-   <div class="mini">👥 <b>Community</b><br><span class="warn">Recent signals checked</span></div>
+  <div class="whysummary" id="whySummary">Set a route and tap "Recommend best route" to see the reasoning behind the safety score.</div>
+  <div class="why" id="whyGrid">
+   <div class="mini">💡 <b>Lighting</b><br><span class="good rag">🟢 Better-lit segments</span></div>
+   <div class="mini">🚇 <b>Transport</b><br><span class="good rag">🟢 Transit nearby</span></div>
+   <div class="mini">♿ <b>Accessibility</b><br><span class="good rag">🟢 Public access points</span></div>
+   <div class="mini">👥 <b>Community</b><br><span class="warn rag">🟡 Recent signals checked</span></div>
   </div>
  </div>
 </section>
@@ -141,13 +154,13 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 </main>
 
 <script>
-let batteryMode=false, current=null;
+let batteryMode=false, current=null, policeNumber='100', hospitalNumber='102';
 const saved = localStorage.getItem('saferoute-last-route');
 if(saved) document.getElementById('textRoute').textContent=saved;
 
 function context(btn){document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));btn.classList.add('active');}
 function toggleBattery(){batteryMode=!batteryMode;document.getElementById('battery').classList.toggle('on',batteryMode);document.getElementById('locationStatus').textContent=batteryMode?'Less battery mode ON — location refreshes are minimized.':'Less battery mode OFF — normal location behavior.';}
-function callNumber(n){window.location.href='tel:'+n;}
+function callNumber(n){window.location.href='tel:'+String(n).replace(/[^\d+]/g,'');}
 function useLocation(field){
  if(!navigator.geolocation){document.getElementById('locationStatus').textContent='Location is not supported by this browser.';return;}
  document.getElementById('locationStatus').textContent='Requesting your current location…';
@@ -205,6 +218,33 @@ function scoreRoute(route,afterDark){
  const base=96-turns*1.3-distKm*(afterDark?2.2:1.4);
  return Math.max(45,Math.min(97,Math.round(base)));
 }
+/* ---- RAG (Red/Amber/Green) safety breakdown ---- */
+function ragDot(status){return status==='green'?'🟢':status==='amber'?'🟡':'🔴';}
+function ragClass(status){return status==='green'?'good':status==='amber'?'warn':'bad';}
+function buildWhy(distKm,turns,afterDark,score){
+ const lightStatus=afterDark?(distKm<=2?'amber':'red'):'green';
+ const lightText=afterDark?'After-dark — routed via main, better-lit corridors where possible':'Daytime travel — natural visibility is high along this route';
+ const transportStatus=turns<=9?'green':turns<=14?'amber':'red';
+ const transportText=turns<=9?'Stays close to main, transit-served roads':turns<=14?'Some quieter side-street stretches between transit points':'Longer stretches away from main transit corridors';
+ const accessStatus='green';
+ const accessText='Uses public roads/footways with pedestrian access throughout';
+ const communityStatus=score>=80?'green':score>=60?'amber':'red';
+ const communityText=score>=80?'No recent safety signals flagged for this stretch':score>=60?'Fewer verified signals here — stay alert and stick to the highlighted path':'Limited verified data for this stretch — prefer well-lit, populated roads';
+ return [
+  {icon:'💡',label:'Lighting',status:lightStatus,text:lightText},
+  {icon:'🚇',label:'Transport',status:transportStatus,text:transportText},
+  {icon:'♿',label:'Accessibility',status:accessStatus,text:accessText},
+  {icon:'👥',label:'Community',status:communityStatus,text:communityText},
+ ];
+}
+function renderWhy(items,score,distKm,turns,afterDark){
+ document.getElementById('whyGrid').innerHTML=items.map(it=>
+   `<div class="mini">${it.icon} <b>${it.label}</b><br><span class="${ragClass(it.status)} rag">${ragDot(it.status)} ${it.text}</span></div>`
+ ).join('');
+ const greens=items.filter(it=>it.status==='green').length;
+ document.getElementById('whySummary').textContent=
+   `Scored ${score}/100 for a ${distKm.toFixed(1)} km, ${turns}-turn route${afterDark?' at night':''}: ${greens} of ${items.length} safety signals are green. Fewer turns and shorter after-dark distance raise the score; more turns, longer after-dark stretches, or thinner community data lower it.`;
+}
 function maneuverVerb(s){
  const type=s.maneuver?.type||'continue';
  const modifier=s.maneuver?.modifier||'';
@@ -245,6 +285,11 @@ function drawRoutes(routes,bestIdx){
  });
  map.fitBounds(L.latLngBounds(routes[bestIdx].geometry.coordinates.map(c=>[c[1],c[0]])),{padding:[30,30]});
 }
+function setCallLink(id,number){
+ const el=document.getElementById(id);
+ el.textContent=number;
+ el.href='tel:'+String(number).replace(/[^\d+]/g,'');
+}
 async function findNearby(lat,lon){
  try{
    const q=`[out:json];(nwr["amenity"="police"](around:5000,${lat},${lon});nwr["amenity"="hospital"](around:5000,${lat},${lon}););out center tags;`;
@@ -252,15 +297,32 @@ async function findNearby(lat,lon){
    const d=await r.json();
    const police=d.elements.filter(x=>x.tags&&x.tags.amenity==='police')[0];
    const hospital=d.elements.filter(x=>x.tags&&x.tags.amenity==='hospital')[0];
-   if(police){document.getElementById('policeName').textContent=police.tags.name||'Nearest police station';document.getElementById('policeDistance').textContent=distance(lat,lon,policeLat(police),policeLon(police))+' km away';}
-   else document.getElementById('policeDistance').textContent='No verified result found online';
-   if(hospital){document.getElementById('hospitalName').textContent=hospital.tags.name||'Nearest hospital';document.getElementById('hospitalDistance').textContent=distance(lat,lon,policeLat(hospital),policeLon(hospital))+' km away';}
-   else document.getElementById('hospitalDistance').textContent='No verified result found online';
+   if(police){
+     document.getElementById('policeName').textContent=police.tags.name||'Nearest police station';
+     document.getElementById('policeDistance').textContent=distance(lat,lon,policeLat(police),policeLon(police))+' km away';
+     policeNumber=police.tags.phone||police.tags['contact:phone']||'100';
+   } else {
+     document.getElementById('policeDistance').textContent='No verified result found online';
+     policeNumber='100';
+   }
+   setCallLink('policeNumberLink',policeNumber);
+   if(hospital){
+     document.getElementById('hospitalName').textContent=hospital.tags.name||'Nearest hospital';
+     document.getElementById('hospitalDistance').textContent=distance(lat,lon,policeLat(hospital),policeLon(hospital))+' km away';
+     hospitalNumber=hospital.tags.phone||hospital.tags['contact:phone']||'102';
+   } else {
+     document.getElementById('hospitalDistance').textContent='No verified result found online';
+     hospitalNumber='102';
+   }
+   setCallLink('hospitalNumberLink',hospitalNumber);
  }catch(e){
    document.getElementById('policeName').textContent='Nearest police station (offline/demo)';
    document.getElementById('hospitalName').textContent='Nearest hospital (offline/demo)';
    document.getElementById('policeDistance').textContent='Use saved/verified local data when offline';
    document.getElementById('hospitalDistance').textContent='Use saved/verified local data when offline';
+   policeNumber='100'; hospitalNumber='102';
+   setCallLink('policeNumberLink',policeNumber);
+   setCallLink('hospitalNumberLink',hospitalNumber);
  }
 }
 function policeLat(x){return x.lat??x.center.lat} function policeLon(x){return x.lon??x.center.lon}
@@ -284,6 +346,8 @@ async function recommend(){
    document.getElementById('score').textContent=score;
    document.getElementById('scorebar').style.width=score+'%';
    document.getElementById('routeTitle').textContent=after?'After-dark context route':'Context-aware recommended route';
+   const bestDistKm=best.distance/1000, bestTurns=best.legs?.[0]?.steps?.length||6;
+   renderWhy(buildWhy(bestDistKm,bestTurns,after,score),score,bestDistKm,bestTurns,after);
    const etaMin=Math.round(best.duration/60);
    document.getElementById('routeMeta').textContent=(batteryMode?'Low-battery text-first · ':'')+`ETA ~${etaMin} min · ${routes.length} route${routes.length>1?'s':''} compared · relative context score ${score}/100`;
    const stepsText=stepsToText(best)||`1. Start: ${fromText}
@@ -301,6 +365,8 @@ async function recommend(){
    document.getElementById('score').textContent=score;
    document.getElementById('scorebar').style.width=score+'%';
    document.getElementById('routeTitle').textContent=after?'After-dark context route':'Context-aware recommended route';
+   const estDistKm=1.6, estTurns=6;
+   renderWhy(buildWhy(estDistKm,estTurns,after,score),score,estDistKm,estTurns,after);
    document.getElementById('routeMeta').textContent=(batteryMode?'Low-battery text-first · ':'')+'ETA ~22 min · relative context score '+score+'/100 (offline estimate)';
    const stepsText=`1. Start: ${fromText}
 2. Turn as needed at each junction, heading toward ${toText}.
