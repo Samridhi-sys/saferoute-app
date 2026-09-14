@@ -33,40 +33,29 @@ button{border:0;border-radius:13px;padding:12px 15px;font-weight:800;cursor:poin
 footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 @media(max-width:800px){.grid{grid-template-columns:1fr}.nav a{display:none}.hero h1{font-size:31px}.why{grid-template-columns:1fr}.container{padding:15px 12px 50px}}
 </style>
-
+<link rel="icon" type="image/png" href="Logo.png">
 
 </head>
 <body>
 <nav class="nav">
- <div class="logo" style="display: flex; align-items: center; gap: 8px;"><svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://w3.org">
-    <!-- The Shield Background -->
-    <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" fill="#2563eb" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-    <!-- The Route/Checkmark inside the shield (Representing SafeRoute) -->
-    <path d="M9 11L11 13L15 9" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-◈ SafeRoute AI</div><a href="#route">Route</a><a href="#mapSection">Map</a><a href="#safety">Safety</a><a href="#nearby">Nearby help</a><a href="#offline">Offline</a>
+ <div class="logo"><img src="Logo.png" style="width: 26px; height: 26px;">◈ SafeRoute AI</div><a href="#route">Route</a><a href="#mapSection">Map</a><a href="#safety">Safety</a><a href="#nearby">Nearby help</a><a href="#offline">Offline</a>
  <div class="spacer"></div><span id="onlineState">● Online</span>
-
-
-
 </nav>
 
 <main class="container">
 <section class="hero">
  <h1>The fastest route isn't always the right route.</h1>
- <p >SafeRoute AI is a web prototype for context-aware travel recommendations. It considers route context, battery level, offline availability and nearby emergency services.</p>
+ <p>SafeRoute AI is a web prototype for context-aware travel recommendations. It considers route context, battery level, offline availability and nearby emergency services.</p>
 </section>
 
 <div class="grid">
-
-
-        <section class="card" id="route">
-        <h2 >Plan your journey</h2>
+<section class="card" id="route">
+ <h2>Plan your journey</h2>
  <label>FROM</label>
  <div class="inputrow"><input id="from" value="IGDTUW, Delhi"><button class="loc" onclick="useLocation('from')">⌖ Current location</button></div>
  <label>TO</label>
  <div class="inputrow"><input id="to" value="Kashmere Gate Metro"><button class="loc" onclick="useLocation('to')">⌖ Current location</button></div>
- <label >Travel context</label>
+ <label>Travel context</label>
  <div class="chips">
   <button class="chip active" onclick="context(this)">Day</button><button class="chip" onclick="context(this)">After dark</button><button class="chip" onclick="context(this)">Event</button>
  </div>
