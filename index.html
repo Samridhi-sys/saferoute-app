@@ -35,6 +35,20 @@ button{border:0;border-radius:13px;padding:12px 15px;font-weight:800;cursor:poin
 .legend i{display:inline-block;width:18px;height:4px;border-radius:2px}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 @media(max-width:800px){.grid{grid-template-columns:1fr}.nav a{display:none}.hero h1{font-size:31px}.why{grid-template-columns:1fr}.container{padding:15px 12px 50px}}
+.chatbtn{position:fixed;right:20px;bottom:20px;width:58px;height:58px;border-radius:50%;background:var(--pink);color:#fff;font-size:26px;box-shadow:0 10px 25px #4a26353d;z-index:20;display:flex;align-items:center;justify-content:center}
+.chatpanel{position:fixed;right:20px;bottom:88px;width:330px;max-width:88vw;height:440px;max-height:70vh;background:#fff;border-radius:20px;box-shadow:0 16px 40px #4a263540;display:none;flex-direction:column;overflow:hidden;z-index:20;border:1px solid var(--line)}
+.chatpanel.open{display:flex}
+.chathead{background:var(--deep);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:14px}
+.chathead button{background:transparent;color:#fff;padding:2px 8px;font-size:16px}
+.chatbody{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#faf7f8}
+.bubble{max-width:82%;padding:9px 12px;border-radius:14px;font-size:13px;line-height:1.4}
+.bubble.bot{background:#f0e3e8;color:var(--deep);align-self:flex-start;border-bottom-left-radius:4px}
+.bubble.user{background:var(--pink);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chatquick{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 8px}
+.chatquick button{background:#f6e6ec;color:#9f2555;font-size:11px;padding:6px 10px;border-radius:20px;font-weight:700}
+.chatinputrow{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.chatinputrow input{flex:1;font-size:13px;padding:10px}
+.chatinputrow button{background:var(--pink);color:#fff;padding:10px 14px}
 </style>
 </head>
 <body>
@@ -163,6 +177,17 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 <footer data-i18n="footerText">Vibeathon prototype · Demo data is simulated. Emergency numbers are shown from official Indian government information; browser calling depends on the device.</footer>
 </main>
 
+<button class="chatbtn" id="chatToggleBtn" onclick="toggleChat()" aria-label="Chat">💬</button>
+<div class="chatpanel" id="chatPanel">
+ <div class="chathead"><span data-i18n="chatTitle">SafeRoute Assistant</span><button onclick="toggleChat()">✕</button></div>
+ <div class="chatbody" id="chatBody"></div>
+ <div class="chatquick" id="chatQuick"></div>
+ <div class="chatinputrow">
+  <input id="chatInput" data-i18n-placeholder="chatPlaceholder" placeholder="Ask something…" onkeydown="if(event.key==='Enter')sendChat()">
+  <button onclick="sendChat()" data-i18n="chatSend">Send</button>
+ </div>
+</div>
+
 <script>
 /* ================= i18n ================= */
 let lang = localStorage.getItem('saferoute-lang') || 'en';
@@ -245,6 +270,19 @@ const I18N = {
   guardianSmsReadyHtml:msg=>`<b>Guardian SMS ready</b><br><span class="status">The message below contains the last known location.</span><div class="textroute" style="margin-top:10px">${msg}</div>`,
   guardianDeviceOfflineHtml:time=>`<b>⚠ Device offline</b><br><span class="warn">Last known location recorded at ${time}. A production backend can notify the guardian here.</span>`,
   guardianBackOnlineHtml:'<b>Guardian status</b><br><span class="good">✓ Device online again. Last known location is available.</span>',
+  chatTitle:'SafeRoute Assistant',chatPlaceholder:'Ask something…',chatSend:'Send',
+  chatGreeting:"Hi! I'm the SafeRoute Assistant. Ask me about routes, safety scores, emergency numbers, guardian alerts or offline mode.",
+  chatQ1:'How do I get the best route?',chatQ2:'What do the safety colors mean?',chatQ3:'Emergency numbers?',chatQ4:'How does Trusted Guardian work?',
+  chatA_route:'Enter FROM and TO under "Plan your journey", pick Day / After dark / Event, then tap "Recommend best route". The map will highlight the safest option and show a safety score below it.',
+  chatA_colors:'🟢 Green = good on that safety factor, 🟡 Amber = be a bit more alert, 🔴 Red = limited data or higher risk on that factor. The four factors are Lighting, Transport, Accessibility and Community signals.',
+  chatA_emergency:'Tap the red CALL 112 button for general emergencies, or use the Women Helpline 181 link. Nearest police/hospital numbers are shown live under "Nearby help".',
+  chatA_guardian:'Add a guardian name and phone number in the Trusted Guardian section, then Save. If your device goes offline, SafeRoute can prepare an SMS with your last known location for them.',
+  chatA_offline:'SafeRoute saves your last recommended route as plain text on this device (Offline route text section), so you can still follow it and call 112 even with no internet.',
+  chatA_battery:'Turn on "Less battery mode" in the route planner — it reduces location refreshes and favors text-first navigation to save power.',
+  chatA_lang:'Tap EN / हिं at the top of the page to switch the whole app between English and Hindi.',
+  chatA_greeting:'Hello! How can I help — routes, safety scores, emergency numbers, guardian alerts, offline mode or language?',
+  chatA_thanks:"You're welcome! Stay safe. 🙂",
+  chatA_fallback:"I can help with: best routes, safety score colors, emergency numbers, Trusted Guardian, offline mode, battery mode, or language. Try asking about one of these, or tap a quick question below.",
  },
  hi:{
   navRoute:'मार्ग',navMap:'नक़्शा',navSafety:'सुरक्षा',navNearby:'आस-पास मदद',navOffline:'ऑफ़लाइन',
@@ -324,6 +362,19 @@ const I18N = {
   guardianSmsReadyHtml:msg=>`<b>अभिभावक SMS तैयार है</b><br><span class="status">नीचे दिए संदेश में अंतिम ज्ञात स्थान है।</span><div class="textroute" style="margin-top:10px">${msg}</div>`,
   guardianDeviceOfflineHtml:time=>`<b>⚠ डिवाइस ऑफ़लाइन</b><br><span class="warn">अंतिम ज्ञात स्थान ${time} को दर्ज किया गया। प्रोडक्शन बैकएंड यहां अभिभावक को सूचित कर सकता है।</span>`,
   guardianBackOnlineHtml:'<b>अभिभावक स्थिति</b><br><span class="good">✓ डिवाइस फिर से ऑनलाइन है। अंतिम ज्ञात स्थान उपलब्ध है।</span>',
+  chatTitle:'SafeRoute सहायक',chatPlaceholder:'कुछ पूछें…',chatSend:'भेजें',
+  chatGreeting:'नमस्ते! मैं SafeRoute सहायक हूँ। मुझसे मार्ग, सुरक्षा स्कोर, आपातकालीन नंबर, अभिभावक अलर्ट या ऑफ़लाइन मोड के बारे में पूछें।',
+  chatQ1:'सर्वश्रेष्ठ मार्ग कैसे पाएं?',chatQ2:'सुरक्षा रंगों का क्या मतलब है?',chatQ3:'आपातकालीन नंबर?',chatQ4:'विश्वसनीय अभिभावक कैसे काम करता है?',
+  chatA_route:'"अपनी यात्रा की योजना बनाएं" में FROM और TO भरें, दिन / रात में / आयोजन चुनें, फिर "सर्वश्रेष्ठ मार्ग सुझाएं" पर टैप करें। नक्शा सबसे सुरक्षित विकल्प हाइलाइट करेगा और नीचे सुरक्षा स्कोर दिखाएगा।',
+  chatA_colors:'🟢 हरा = उस सुरक्षा पहलू पर अच्छा, 🟡 पीला = थोड़ा सतर्क रहें, 🔴 लाल = सीमित डेटा या उस पहलू पर अधिक जोखिम। चार पहलू हैं: रोशनी, परिवहन, सुगम्यता और समुदाय संकेत।',
+  chatA_emergency:'सामान्य आपातकाल के लिए लाल "112 पर कॉल करें" बटन दबाएं, या महिला हेल्पलाइन 181 लिंक उपयोग करें। नज़दीकी पुलिस/अस्पताल नंबर "आस-पास मदद" में लाइव दिखते हैं।',
+  chatA_guardian:'ट्रस्टेड गार्डियन सेक्शन में अभिभावक का नाम और फ़ोन नंबर जोड़ें, फिर सहेजें। यदि आपका डिवाइस ऑफ़लाइन हो जाता है, तो SafeRoute उनके लिए अंतिम ज्ञात स्थान के साथ एक SMS तैयार कर सकता है।',
+  chatA_offline:'SafeRoute आपके अंतिम अनुशंसित मार्ग को इस डिवाइस पर सादे पाठ के रूप में सहेजता है (ऑफ़लाइन मार्ग पाठ सेक्शन), ताकि बिना इंटरनेट के भी आप उसका अनुसरण कर सकें और 112 पर कॉल कर सकें।',
+  chatA_battery:'रूट प्लानर में "कम बैटरी मोड" चालू करें — यह स्थान रिफ्रेश कम करता है और बिजली बचाने के लिए टेक्स्ट-फर्स्ट नेविगेशन को प्राथमिकता देता है।',
+  chatA_lang:'पूरे ऐप को अंग्रेज़ी और हिंदी के बीच बदलने के लिए पेज के ऊपर EN / हिं पर टैप करें।',
+  chatA_greeting:'नमस्ते! मैं कैसे मदद कर सकता हूँ — मार्ग, सुरक्षा स्कोर, आपातकालीन नंबर, अभिभावक अलर्ट, ऑफ़लाइन मोड या भाषा?',
+  chatA_thanks:'आपका स्वागत है! सुरक्षित रहें। 🙂',
+  chatA_fallback:'मैं इनमें मदद कर सकता हूँ: सर्वश्रेष्ठ मार्ग, सुरक्षा स्कोर के रंग, आपातकालीन नंबर, विश्वसनीय अभिभावक, ऑफ़लाइन मोड, बैटरी मोड, या भाषा। इनमें से किसी के बारे में पूछें, या नीचे एक त्वरित प्रश्न टैप करें।',
  }
 };
 function tr(key,...args){ const v=I18N[lang][key]; if(v===undefined) return ''; return typeof v==='function'? v(...args): v; }
@@ -343,6 +394,11 @@ function applyI18n(){
    const key=el.getAttribute('data-i18n');
    if(I18N[lang][key]!==undefined) el.textContent=tr(key);
  });
+ document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+   const key=el.getAttribute('data-i18n-placeholder');
+   if(I18N[lang][key]!==undefined) el.placeholder=tr(key);
+ });
+ if(typeof renderChatQuick==='function') renderChatQuick();
  document.getElementById('langEN').classList.toggle('active',lang==='en');
  document.getElementById('langHI').classList.toggle('active',lang==='hi');
  document.getElementById('onlineState').textContent = navigator.onLine? tr('onlineLabel'):tr('offlineLabel');
@@ -628,6 +684,62 @@ window.addEventListener('online',()=>{
  const l=JSON.parse(localStorage.getItem('saferoute-last-known')||'null');
  if(l) document.getElementById('guardianStatus').innerHTML=tr('guardianBackOnlineHtml');
 });
+
+/* ================= Chat assistant ================= */
+let chatOpen=false, chatGreeted=false;
+function toggleChat(){
+ chatOpen=!chatOpen;
+ document.getElementById('chatPanel').classList.toggle('open',chatOpen);
+ if(chatOpen && !chatGreeted){ chatGreeted=true; addBubble(tr('chatGreeting'),'bot'); }
+ if(chatOpen) document.getElementById('chatInput').focus();
+}
+function addBubble(text,who){
+ const body=document.getElementById('chatBody');
+ const b=document.createElement('div');
+ b.className='bubble '+who;
+ b.textContent=text;
+ body.appendChild(b);
+ body.scrollTop=body.scrollHeight;
+}
+const CHAT_QUICK=[
+ {key:'chatQ1',ans:'chatA_route'},
+ {key:'chatQ2',ans:'chatA_colors'},
+ {key:'chatQ3',ans:'chatA_emergency'},
+ {key:'chatQ4',ans:'chatA_guardian'},
+];
+function renderChatQuick(){
+ const el=document.getElementById('chatQuick');
+ if(!el) return;
+ el.innerHTML='';
+ CHAT_QUICK.forEach(q=>{
+   const btn=document.createElement('button');
+   btn.textContent=tr(q.key);
+   btn.onclick=()=>{ addBubble(tr(q.key),'user'); addBubble(tr(q.ans),'bot'); };
+   el.appendChild(btn);
+ });
+}
+function chatReply(msgRaw){
+ const msg=msgRaw.toLowerCase();
+ const has=(...words)=>words.some(w=>msg.includes(w));
+ if(has('route','best route','दिशा','सबसे','मार्ग')) return tr('chatA_route');
+ if(has('color','colour','green','red','amber','score','रंग','स्कोर')) return tr('chatA_colors');
+ if(has('emergency','police','hospital','112','181','आपातकाल','पुलिस','अस्पताल')) return tr('chatA_emergency');
+ if(has('guardian','sms','parent','अभिभावक','गार्जियन')) return tr('chatA_guardian');
+ if(has('offline','no internet','इंटरनेट','ऑफ़लाइन')) return tr('chatA_offline');
+ if(has('battery','बैटरी')) return tr('chatA_battery');
+ if(has('language','hindi','english','भाषा','हिंदी')) return tr('chatA_lang');
+ if(has('hi','hello','hey','namaste','नमस्ते','हैलो')) return tr('chatA_greeting');
+ if(has('thank','thanks','धन्यवाद','शुक्रिया')) return tr('chatA_thanks');
+ return tr('chatA_fallback');
+}
+function sendChat(){
+ const input=document.getElementById('chatInput');
+ const msg=input.value.trim();
+ if(!msg) return;
+ addBubble(msg,'user');
+ input.value='';
+ setTimeout(()=>addBubble(chatReply(msg),'bot'),250);
+}
 
 applyI18n();
 </script>
