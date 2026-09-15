@@ -50,10 +50,13 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 .chatinputrow input{flex:1;font-size:13px;padding:10px}
 .chatinputrow button{background:var(--pink);color:#fff;padding:10px 14px}
 </style>
+<link rel="icon" type="image/png" href="Logo.png">
 </head>
 <body>
 <nav class="nav">
- <div class="logo">◈ SafeRoute AI</div><a href="#route" data-i18n="navRoute">Route</a><a href="#mapSection" data-i18n="navMap">Map</a><a href="#safety" data-i18n="navSafety">Safety</a><a href="#nearby" data-i18n="navNearby">Nearby help</a><a href="#offline" data-i18n="navOffline">Offline</a>
+ <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+  <img src="Logo.png" alt="SafeRoute AI Logo" style="width: 26px; height: 26px; object-fit: contain;">
+◈ SafeRoute AI</div><a href="#route" data-i18n="navRoute">Route</a><a href="#mapSection" data-i18n="navMap">Map</a><a href="#safety" data-i18n="navSafety">Safety</a><a href="#nearby" data-i18n="navNearby">Nearby help</a><a href="#offline" data-i18n="navOffline">Offline</a>
  <div class="spacer"></div>
  <div class="langtoggle"><button id="langEN" onclick="setLang('en')">EN</button><button id="langHI" onclick="setLang('hi')">हिं</button></div>
  <span id="onlineState">● Online</span>
