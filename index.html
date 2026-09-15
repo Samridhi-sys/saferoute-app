@@ -13,6 +13,9 @@
 *{box-sizing:border-box}body{margin:0;background:#f5f0f2;color:var(--deep);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
 .nav{position:sticky;top:0;z-index:5;background:#3a202bf2;color:#fff;padding:14px 5%;display:flex;align-items:center;gap:28px;backdrop-filter:blur(12px)}
 .logo{font-weight:900;font-size:20px;letter-spacing:.5px}.nav a{color:#fff;text-decoration:none;font-size:13px;opacity:.9}.spacer{flex:1}
+.langtoggle{display:flex;gap:6px;background:#ffffff1a;padding:3px;border-radius:20px}
+.langtoggle button{background:transparent;border:0;color:#fff;padding:5px 12px;font-size:12px;border-radius:16px;font-weight:800;cursor:pointer;opacity:.75}
+.langtoggle button.active{background:#fff;color:#3a202b;opacity:1}
 .container{max-width:1120px;margin:auto;padding:26px 20px 70px}.hero{background:linear-gradient(135deg,#722142,#d14b76);color:#fff;border-radius:28px;padding:42px;margin-bottom:20px;box-shadow:0 16px 40px #4a26351c}
 .hero h1{font-size:42px;margin:0 0 10px}.hero p{font-size:17px;max-width:680px;opacity:.93}
 .grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 8px 25px #4a26350b}.card h2{margin:0 0 15px;font-size:19px}
@@ -33,127 +36,326 @@ button{border:0;border-radius:13px;padding:12px 15px;font-weight:800;cursor:poin
 footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 @media(max-width:800px){.grid{grid-template-columns:1fr}.nav a{display:none}.hero h1{font-size:31px}.why{grid-template-columns:1fr}.container{padding:15px 12px 50px}}
 </style>
-<link rel="icon" type="image/png" href="Logo.png">
-
 </head>
 <body>
 <nav class="nav">
- <div class="logo"><img src="Logo.png" style="width: 26px; height: 26px;">◈ SafeRoute AI</div><a href="#route">Route</a><a href="#mapSection">Map</a><a href="#safety">Safety</a><a href="#nearby">Nearby help</a><a href="#offline">Offline</a>
- <div class="spacer"></div><span id="onlineState">● Online</span>
+ <div class="logo">◈ SafeRoute AI</div><a href="#route" data-i18n="navRoute">Route</a><a href="#mapSection" data-i18n="navMap">Map</a><a href="#safety" data-i18n="navSafety">Safety</a><a href="#nearby" data-i18n="navNearby">Nearby help</a><a href="#offline" data-i18n="navOffline">Offline</a>
+ <div class="spacer"></div>
+ <div class="langtoggle"><button id="langEN" onclick="setLang('en')">EN</button><button id="langHI" onclick="setLang('hi')">हिं</button></div>
+ <span id="onlineState">● Online</span>
+
+
+
 </nav>
 
 <main class="container">
 <section class="hero">
- <h1>The fastest route isn't always the right route.</h1>
- <p>SafeRoute AI is a web prototype for context-aware travel recommendations. It considers route context, battery level, offline availability and nearby emergency services.</p>
+ <h1 data-i18n="heroTitle">The fastest route isn't always the right route.</h1>
+ <p data-i18n="heroDesc">SafeRoute AI is a web prototype for context-aware travel recommendations. It considers route context, battery level, offline availability and nearby emergency services.</p>
 </section>
 
 <div class="grid">
-<section class="card" id="route">
- <h2>Plan your journey</h2>
- <label>FROM</label>
- <div class="inputrow"><input id="from" value="IGDTUW, Delhi"><button class="loc" onclick="useLocation('from')">⌖ Current location</button></div>
- <label>TO</label>
- <div class="inputrow"><input id="to" value="Kashmere Gate Metro"><button class="loc" onclick="useLocation('to')">⌖ Current location</button></div>
- <label>Travel context</label>
+
+
+        <section class="card" id="route">
+        <h2 data-i18n="planJourney">Plan your journey</h2>
+ <label data-i18n="fromLabel">FROM</label>
+ <div class="inputrow"><input id="from" value="IGDTUW, Delhi"><button class="loc" data-i18n="currentLocationBtn" onclick="useLocation('from')">⌖ Current location</button></div>
+ <label data-i18n="toLabel">TO</label>
+ <div class="inputrow"><input id="to" value="Kashmere Gate Metro"><button class="loc" data-i18n="currentLocationBtn" onclick="useLocation('to')">⌖ Current location</button></div>
+ <label data-i18n="travelContext">Travel context</label>
  <div class="chips">
-  <button class="chip active" onclick="context(this)">Day</button><button class="chip" onclick="context(this)">After dark</button><button class="chip" onclick="context(this)">Event</button>
+  <button class="chip active" data-ctx="day" data-i18n="chipDay" onclick="context(this)">Day</button><button class="chip" data-ctx="afterdark" data-i18n="chipAfterDark" onclick="context(this)">After dark</button><button class="chip" data-ctx="event" data-i18n="chipEvent" onclick="context(this)">Event</button>
  </div>
- <div class="toggle"><div><b>Less battery mode</b><br><span class="status">Reduces location refreshes and uses text-first navigation.</span></div><div class="switch" id="battery" onclick="toggleBattery()"><i></i></div></div>
- <button class="primary" onclick="recommend()">Recommend best route</button>
- <div id="locationStatus" class="status">Tip: allow browser location permission when using Current location.</div>
+ <div class="toggle"><div><b data-i18n="batteryTitle">Less battery mode</b><br><span class="status" data-i18n="batteryDesc">Reduces location refreshes and uses text-first navigation.</span></div><div class="switch" id="battery" onclick="toggleBattery()"><i></i></div></div>
+ <button class="primary" data-i18n="recommendBtn" onclick="recommend()">Recommend best route</button>
+ <div id="locationStatus" class="status" data-i18n="locTip">Tip: allow browser location permission when using Current location.</div>
 </section>
 
 <section>
  <div class="emergency">
-   <div><div class="big">🚨 Emergency</div><div style="font-size:12px;opacity:.9">Call emergency response immediately.</div></div>
-   <button onclick="callNumber('112')">CALL 112</button>
+   <div><div class="big" data-i18n="emergencyTitle">🚨 Emergency</div><div style="font-size:12px;opacity:.9" data-i18n="emergencyDesc">Call emergency response immediately.</div></div>
+   <button data-i18n="callBtn" onclick="callNumber('112')">CALL 112</button>
  </div>
  <div class="help">
-   <a href="tel:181">Women Helpline 181</a>
-   <a href="tel:112">Emergency 112</a>
+   <a href="tel:181" data-i18n="womenHelpline">Women Helpline 181</a>
+   <a href="tel:112" data-i18n="emergency112">Emergency 112</a>
  </div>
 
  <div class="card" id="nearby" style="margin-top:15px">
-  <h2>Always-visible nearby help</h2>
+  <h2 data-i18n="nearbyTitle">Always-visible nearby help</h2>
   <div class="place">
-   <div>👮 <b id="policeName">Nearest police station</b><br><small id="policeDistance">Waiting for location…</small></div>
+   <div>👮 <b id="policeName" data-i18n="policeDefaultName">Nearest police station</b><br><small id="policeDistance" data-i18n="waitingLocation">Waiting for location…</small></div>
    <div class="placeaction">
-    <button class="call" onclick="callNumber(policeNumber)">Call</button>
+    <button class="call" data-i18n="callBtnSmall" onclick="callNumber(policeNumber)">Call</button>
     <a class="calllink" id="policeNumberLink" href="tel:100">100</a>
    </div>
   </div>
   <div class="place">
-   <div>🏥 <b id="hospitalName">Nearest hospital</b><br><small id="hospitalDistance">Waiting for location…</small></div>
+   <div>🏥 <b id="hospitalName" data-i18n="hospitalDefaultName">Nearest hospital</b><br><small id="hospitalDistance" data-i18n="waitingLocation">Waiting for location…</small></div>
    <div class="placeaction">
-    <button class="call" onclick="callNumber(hospitalNumber)">Emergency</button>
+    <button class="call" data-i18n="emergencyBtnSmall" onclick="callNumber(hospitalNumber)">Emergency</button>
     <a class="calllink" id="hospitalNumberLink" href="tel:102">102</a>
    </div>
   </div>
-  <div class="status">For a real deployment, these cards should be populated from a verified local places/health-service database.</div>
+  <div class="status" data-i18n="nearbyNote">For a real deployment, these cards should be populated from a verified local places/health-service database.</div>
  </div>
 </section>
 </div>
 
 <section class="card" id="mapSection" style="margin-top:18px">
- <h2>🗺️ Live route map</h2>
+ <h2 data-i18n="liveMapTitle">🗺️ Live route map</h2>
  <div id="mapView"></div>
- <div class="status" id="mapStatus">Set a From/To location (or use Current location), then tap "Recommend best route" — the map will update and highlight the safest option found.</div>
+ <div class="status" id="mapStatus" data-i18n="mapStatusDefault">Set a From/To location (or use Current location), then tap "Recommend best route" — the map will update and highlight the safest option found.</div>
  <div class="legend">
-  <span><i style="background:var(--pink)"></i>Recommended route</span>
-  <span><i style="background:#b9a7ae;border-top:2px dashed #b9a7ae;height:0"></i>Other option considered</span>
+  <span><i style="background:var(--pink)"></i><span data-i18n="legendBest">Recommended route</span></span>
+  <span><i style="background:#b9a7ae;border-top:2px dashed #b9a7ae;height:0"></i><span data-i18n="legendOther">Other option considered</span></span>
  </div>
 </section>
 
 <section class="card" id="safety" style="margin-top:18px">
- <h2>Recommended route</h2>
+ <h2 data-i18n="recommendedRouteTitle">Recommended route</h2>
  <div class="route">
-  <div class="routehead"><div><b id="routeTitle">SafeRoute recommendation</b><br><span class="status" id="routeMeta">Context-aware route</span></div><div class="score" id="score">87</div></div>
+  <div class="routehead"><div><b id="routeTitle" data-i18n="routeTitleDefault">SafeRoute recommendation</b><br><span class="status" id="routeMeta" data-i18n="routeMetaDefault">Context-aware route</span></div><div class="score" id="score">87</div></div>
   <div class="bar"><span id="scorebar"></span></div>
-  <div class="whysummary" id="whySummary">Set a route and tap "Recommend best route" to see the reasoning behind the safety score.</div>
+  <div class="whysummary" id="whySummary" data-i18n="whySummaryDefault">Set a route and tap "Recommend best route" to see the reasoning behind the safety score.</div>
   <div class="why" id="whyGrid">
-   <div class="mini">💡 <b>Lighting</b><br><span class="good rag">🟢 Better-lit segments</span></div>
-   <div class="mini">🚇 <b>Transport</b><br><span class="good rag">🟢 Transit nearby</span></div>
-   <div class="mini">♿ <b>Accessibility</b><br><span class="good rag">🟢 Public access points</span></div>
-   <div class="mini">👥 <b>Community</b><br><span class="warn rag">🟡 Recent signals checked</span></div>
+   <div class="mini">💡 <b data-i18n="lightingLabel">Lighting</b><br><span class="good rag" data-i18n="lightDefault">🟢 Better-lit segments</span></div>
+   <div class="mini">🚇 <b data-i18n="transportLabel">Transport</b><br><span class="good rag" data-i18n="transportDefault">🟢 Transit nearby</span></div>
+   <div class="mini">♿ <b data-i18n="accessibilityLabel">Accessibility</b><br><span class="good rag" data-i18n="accessDefault">🟢 Public access points</span></div>
+   <div class="mini">👥 <b data-i18n="communityLabel">Community</b><br><span class="warn rag" data-i18n="communityDefault">🟡 Recent signals checked</span></div>
   </div>
  </div>
 </section>
 
 
 <section class="card" id="guardian" style="margin-top:18px">
- <h2>👨‍👩‍👧 Trusted Guardian</h2>
- <p class="status">Opt-in location sharing. SafeRoute stores the last known location and can notify the trusted guardian when the device becomes unreachable.</p>
- <label>GUARDIAN NAME</label>
+ <h2 data-i18n="guardianTitle">👨‍👩‍👧 Trusted Guardian</h2>
+ <p class="status" data-i18n="guardianDesc">Opt-in location sharing. SafeRoute stores the last known location and can notify the trusted guardian when the device becomes unreachable.</p>
+ <label data-i18n="guardianNameLabel">GUARDIAN NAME</label>
  <input id="guardianName" value="Parent">
- <label>GUARDIAN PHONE</label>
+ <label data-i18n="guardianPhoneLabel">GUARDIAN PHONE</label>
  <input id="guardianPhone" placeholder="+91XXXXXXXXXX" inputmode="tel">
  <div class="toggle">
-   <div><b>Guardian alerts</b><br><span class="status">Send a last-known-location alert when the server detects the device offline.</span></div>
+   <div><b data-i18n="guardianAlertsTitle">Guardian alerts</b><br><span class="status" data-i18n="guardianAlertsDesc">Send a last-known-location alert when the server detects the device offline.</span></div>
    <div class="switch on" id="guardianSwitch" onclick="toggleGuardian()"><i></i></div>
  </div>
- <button class="primary" onclick="saveGuardian()">Save trusted guardian</button>
+ <button class="primary" data-i18n="saveGuardianBtn" onclick="saveGuardian()">Save trusted guardian</button>
  <div class="route" id="guardianStatus">
-   <b>Guardian status</b><br><span class="status">No alert sent yet.</span>
+   <b data-i18n="guardianStatusDefaultTitle">Guardian status</b><br><span class="status" data-i18n="guardianStatusNoAlert">No alert sent yet.</span>
  </div>
  <div class="offline">
-   <b>Demo SMS</b><br>
-   The prototype can prepare an SMS with the last known coordinates. A production version needs an authenticated backend + SMS provider to send automatically.
-   <button class="primary" style="margin-top:10px" onclick="prepareSMS()">Prepare guardian SMS</button>
+   <b data-i18n="demoSmsTitle">Demo SMS</b><br>
+   <span data-i18n="demoSmsDesc">The prototype can prepare an SMS with the last known coordinates. A production version needs an authenticated backend + SMS provider to send automatically.</span>
+   <button class="primary" style="margin-top:10px" data-i18n="prepareSmsBtn" onclick="prepareSMS()">Prepare guardian SMS</button>
  </div>
 </section>
 
 <section class="card" id="offline" style="margin-top:18px">
- <h2>Offline route text</h2>
- <div class="offline" id="offlineNotice">If the internet disappears, SafeRoute keeps the last saved route summary on this device.</div>
- <div class="textroute" id="textRoute">1. Start from your selected origin.
+ <h2 data-i18n="offlineTitle">Offline route text</h2>
+ <div class="offline" id="offlineNotice" data-i18n="offlineNoticeDefault">If the internet disappears, SafeRoute keeps the last saved route summary on this device.</div>
+ <div class="textroute" id="textRoute" data-i18n="textRouteDefault">1. Start from your selected origin.
 2. Follow the saved main road toward the destination.
 3. Prefer the better-lit public/transit corridor shown in your last recommendation.
 4. If navigation data is unavailable, continue using these saved turns and contact 112 in an emergency.</div>
- <button class="primary" onclick="saveRoute()">Save this route for offline use</button>
+ <button class="primary" data-i18n="saveOfflineBtn" onclick="saveRoute()">Save this route for offline use</button>
 </section>
-<footer>Vibeathon prototype · Demo data is simulated. Emergency numbers are shown from official Indian government information; browser calling depends on the device.</footer>
+<footer data-i18n="footerText">Vibeathon prototype · Demo data is simulated. Emergency numbers are shown from official Indian government information; browser calling depends on the device.</footer>
 </main>
+
+<script>
+/* ================= i18n ================= */
+let lang = localStorage.getItem('saferoute-lang') || 'en';
+const I18N = {
+ en:{
+  navRoute:'Route',navMap:'Map',navSafety:'Safety',navNearby:'Nearby help',navOffline:'Offline',
+  onlineLabel:'● Online',offlineLabel:'● Offline',
+  heroTitle:"The fastest route isn't always the right route.",
+  heroDesc:'SafeRoute AI is a web prototype for context-aware travel recommendations. It considers route context, battery level, offline availability and nearby emergency services.',
+  planJourney:'Plan your journey',fromLabel:'FROM',toLabel:'TO',currentLocationBtn:'⌖ Current location',
+  travelContext:'Travel context',chipDay:'Day',chipAfterDark:'After dark',chipEvent:'Event',
+  batteryTitle:'Less battery mode',batteryDesc:'Reduces location refreshes and uses text-first navigation.',
+  recommendBtn:'Recommend best route',locTip:'Tip: allow browser location permission when using Current location.',
+  emergencyTitle:'🚨 Emergency',emergencyDesc:'Call emergency response immediately.',callBtn:'CALL 112',
+  womenHelpline:'Women Helpline 181',emergency112:'Emergency 112',
+  nearbyTitle:'Always-visible nearby help',policeDefaultName:'Nearest police station',hospitalDefaultName:'Nearest hospital',
+  waitingLocation:'Waiting for location…',callBtnSmall:'Call',emergencyBtnSmall:'Emergency',
+  nearbyNote:'For a real deployment, these cards should be populated from a verified local places/health-service database.',
+  liveMapTitle:'🗺️ Live route map',
+  mapStatusDefault:'Set a From/To location (or use Current location), then tap "Recommend best route" — the map will update and highlight the safest option found.',
+  legendBest:'Recommended route',legendOther:'Other option considered',
+  recommendedRouteTitle:'Recommended route',routeTitleDefault:'SafeRoute recommendation',routeMetaDefault:'Context-aware route',
+  whySummaryDefault:'Set a route and tap "Recommend best route" to see the reasoning behind the safety score.',
+  lightingLabel:'Lighting',transportLabel:'Transport',accessibilityLabel:'Accessibility',communityLabel:'Community',
+  lightDefault:'🟢 Better-lit segments',transportDefault:'🟢 Transit nearby',accessDefault:'🟢 Public access points',communityDefault:'🟡 Recent signals checked',
+  guardianTitle:'👨‍👩‍👧 Trusted Guardian',
+  guardianDesc:'Opt-in location sharing. SafeRoute stores the last known location and can notify the trusted guardian when the device becomes unreachable.',
+  guardianNameLabel:'GUARDIAN NAME',guardianPhoneLabel:'GUARDIAN PHONE',
+  guardianAlertsTitle:'Guardian alerts',guardianAlertsDesc:'Send a last-known-location alert when the server detects the device offline.',
+  saveGuardianBtn:'Save trusted guardian',guardianStatusDefaultTitle:'Guardian status',guardianStatusNoAlert:'No alert sent yet.',
+  demoSmsTitle:'Demo SMS',demoSmsDesc:'The prototype can prepare an SMS with the last known coordinates. A production version needs an authenticated backend + SMS provider to send automatically.',
+  prepareSmsBtn:'Prepare guardian SMS',
+  offlineTitle:'Offline route text',offlineNoticeDefault:'If the internet disappears, SafeRoute keeps the last saved route summary on this device.',
+  textRouteDefault:'1. Start from your selected origin.\n2. Follow the saved main road toward the destination.\n3. Prefer the better-lit public/transit corridor shown in your last recommendation.\n4. If navigation data is unavailable, continue using these saved turns and contact 112 in an emergency.',
+  saveOfflineBtn:'Save this route for offline use',
+  footerText:'Vibeathon prototype · Demo data is simulated. Emergency numbers are shown from official Indian government information; browser calling depends on the device.',
+  finding:'Finding the safest route…',
+  mapUpdated:n=>`Map updated — comparing ${n} route option${n>1?'s':''}, best one highlighted.`,
+  routeError:'Could not reach the live map/routing service — showing an offline estimate instead.',
+  mapStatusResult:n=>`Pink solid line = recommended route.${n>1?' Grey dashed = alternative(s) considered.':''}`,
+  offlineNoticeSaved:'Route summary saved locally on this device.',
+  offlineNoticeSavedOffline:'Route summary saved locally on this device (live map/routing unavailable).',
+  offlineNoticeManualSaved:'✓ Saved. This text remains available without internet.',
+  afterDarkTitle:'After-dark context route',dayTitle:'Context-aware recommended route',
+  routeMetaOnline:(batteryPrefix,eta,n,score)=>`${batteryPrefix}ETA ~${eta} min · ${n} route${n>1?'s':''} compared · relative context score ${score}/100`,
+  routeMetaOffline:(batteryPrefix,score)=>`${batteryPrefix}ETA ~22 min · relative context score ${score}/100 (offline estimate)`,
+  batteryPrefix:'Low-battery text-first · ',
+  batteryOn:'Less battery mode ON — location refreshes are minimized.',
+  batteryOff:'Less battery mode OFF — normal location behavior.',
+  geoUnsupported:'Location is not supported by this browser.',
+  geoRequesting:'Requesting your current location…',
+  geoDetected:'Current location detected. Finding nearby emergency services…',
+  geoDenied:'Location permission was not granted. You can still use the demo route.',
+  fromWord:'From',toWord:'To',currentLocWord:'current location',
+  whySummaryResult:(score,distKm,turns,after,greens,total)=>`Scored ${score}/100 for a ${distKm.toFixed(1)} km, ${turns}-turn route${after?' at night':''}: ${greens} of ${total} safety signals are green. Fewer turns and shorter after-dark distance raise the score; more turns, longer after-dark stretches, or thinner community data lower it.`,
+  lightAfterNear:'After-dark — routed via main, better-lit corridors where possible',
+  lightAfterFar:'After-dark — routed via main, better-lit corridors where possible',
+  lightDay:'Daytime travel — natural visibility is high along this route',
+  transportGood:'Stays close to main, transit-served roads',
+  transportMid:'Some quieter side-street stretches between transit points',
+  transportBad:'Longer stretches away from main transit corridors',
+  accessText:'Uses public roads/footways with pedestrian access throughout',
+  communityGood:'No recent safety signals flagged for this stretch',
+  communityMid:'Fewer verified signals here — stay alert and stick to the highlighted path',
+  communityBad:'Limited verified data for this stretch — prefer well-lit, populated roads',
+  mvStart:'Start',mvArrive:'Arrive at destination',mvRoundaboutExit:n=>`At the roundabout, take exit ${n}`,mvRoundabout:'Enter the roundabout',
+  mvUturn:'Make a U-turn',mvSharpLeft:'Turn sharply left',mvLeft:'Turn left',mvSlightLeft:'Turn slightly left',
+  mvSharpRight:'Turn sharply right',mvRight:'Turn right',mvSlightRight:'Turn slightly right',mvStraight:'Continue straight',mvContinue:'Continue',
+  ontoWord:name=>` onto ${name}`,
+  stepsFooter:'If internet is unavailable, follow this saved text route and call 112 for emergencies.',
+  fallbackSteps:(from,to)=>`1. Start: ${from}\n2. Turn as needed at each junction, heading toward ${to}.\n3. Prefer the better-lit public/transit corridor from the saved recommendation.\n4. Keep the destination and nearby emergency services visible.\n5. If internet is unavailable, follow this saved text route and call 112 for emergencies.`,
+  noVerifiedResult:'No verified result found online',
+  policeOfflineName:'Nearest police station (offline/demo)',hospitalOfflineName:'Nearest hospital (offline/demo)',
+  useOfflineData:'Use saved/verified local data when offline',
+  kmAway:km=>`${km} km away`,
+  guardianSavedHtml:'<b>Guardian status</b><br><span class="good">✓ Trusted guardian settings saved on this device.</span>',
+  guardianAlertPrompt:'Get Current location first so SafeRoute has a last known coordinate.',
+  guardianSmsMsg:(name,lat,lon,time)=>`SafeRoute AI alert: ${name}, device is offline/unreachable. Last known location: https://maps.google.com/?q=${lat},${lon} . Last update: ${time}. This is the last verified location, not a live location.`,
+  guardianTrustedFallback:'Trusted guardian',
+  guardianSmsReadyHtml:msg=>`<b>Guardian SMS ready</b><br><span class="status">The message below contains the last known location.</span><div class="textroute" style="margin-top:10px">${msg}</div>`,
+  guardianDeviceOfflineHtml:time=>`<b>⚠ Device offline</b><br><span class="warn">Last known location recorded at ${time}. A production backend can notify the guardian here.</span>`,
+  guardianBackOnlineHtml:'<b>Guardian status</b><br><span class="good">✓ Device online again. Last known location is available.</span>',
+ },
+ hi:{
+  navRoute:'मार्ग',navMap:'नक़्शा',navSafety:'सुरक्षा',navNearby:'आस-पास मदद',navOffline:'ऑफ़लाइन',
+  onlineLabel:'● ऑनलाइन',offlineLabel:'● ऑफ़लाइन',
+  heroTitle:'सबसे तेज़ रास्ता हमेशा सही रास्ता नहीं होता।',
+  heroDesc:'SafeRoute AI एक वेब प्रोटोटाइप है जो संदर्भ-आधारित यात्रा सुझाव देता है। यह मार्ग की स्थिति, बैटरी स्तर, ऑफ़लाइन उपलब्धता और आस-पास की आपातकालीन सेवाओं को ध्यान में रखता है।',
+  planJourney:'अपनी यात्रा की योजना बनाएं',fromLabel:'से',toLabel:'तक',currentLocationBtn:'⌖ वर्तमान स्थान',
+  travelContext:'यात्रा संदर्भ',chipDay:'दिन',chipAfterDark:'रात में',chipEvent:'आयोजन',
+  batteryTitle:'कम बैटरी मोड',batteryDesc:'स्थान रिफ्रेश कम करता है और टेक्स्ट-फर्स्ट नेविगेशन का उपयोग करता है।',
+  recommendBtn:'सर्वश्रेष्ठ मार्ग सुझाएं',locTip:'सुझाव: वर्तमान स्थान का उपयोग करते समय ब्राउज़र को लोकेशन की अनुमति दें।',
+  emergencyTitle:'🚨 आपातकाल',emergencyDesc:'तुरंत आपातकालीन सेवा को कॉल करें।',callBtn:'112 पर कॉल करें',
+  womenHelpline:'महिला हेल्पलाइन 181',emergency112:'आपातकाल 112',
+  nearbyTitle:'हमेशा दिखने वाली आस-पास की मदद',policeDefaultName:'नज़दीकी पुलिस स्टेशन',hospitalDefaultName:'नज़दीकी अस्पताल',
+  waitingLocation:'स्थान की प्रतीक्षा…',callBtnSmall:'कॉल करें',emergencyBtnSmall:'आपातकाल',
+  nearbyNote:'वास्तविक उपयोग के लिए, इन कार्ड्स को सत्यापित स्थानीय स्थान/स्वास्थ्य-सेवा डेटाबेस से भरा जाना चाहिए।',
+  liveMapTitle:'🗺️ लाइव मार्ग नक्शा',
+  mapStatusDefault:'From/To स्थान सेट करें (या वर्तमान स्थान का उपयोग करें), फिर "सर्वश्रेष्ठ मार्ग सुझाएं" पर टैप करें — नक्शा अपडेट होगा और सबसे सुरक्षित विकल्प दिखाएगा।',
+  legendBest:'अनुशंसित मार्ग',legendOther:'विचार किया गया अन्य विकल्प',
+  recommendedRouteTitle:'अनुशंसित मार्ग',routeTitleDefault:'SafeRoute अनुशंसा',routeMetaDefault:'संदर्भ-आधारित मार्ग',
+  whySummaryDefault:'मार्ग सेट करें और सुरक्षा स्कोर के पीछे की वजह देखने के लिए "सर्वश्रेष्ठ मार्ग सुझाएं" पर टैप करें।',
+  lightingLabel:'रोशनी',transportLabel:'परिवहन',accessibilityLabel:'सुगम्यता',communityLabel:'समुदाय',
+  lightDefault:'🟢 बेहतर रोशनी वाले हिस्से',transportDefault:'🟢 पास में परिवहन उपलब्ध',accessDefault:'🟢 सार्वजनिक पहुँच बिंदु',communityDefault:'🟡 हाल के संकेत जाँचे गए',
+  guardianTitle:'👨‍👩‍👧 विश्वसनीय अभिभावक',
+  guardianDesc:'ऑप्ट-इन लोकेशन शेयरिंग। SafeRoute अंतिम ज्ञात स्थान संग्रहीत करता है और डिवाइस के अनुपलब्ध होने पर विश्वसनीय अभिभावक को सूचित कर सकता है।',
+  guardianNameLabel:'अभिभावक का नाम',guardianPhoneLabel:'अभिभावक का फ़ोन',
+  guardianAlertsTitle:'अभिभावक अलर्ट',guardianAlertsDesc:'जब सर्वर डिवाइस को ऑफ़लाइन पाए, तब अंतिम ज्ञात स्थान का अलर्ट भेजें।',
+  saveGuardianBtn:'विश्वसनीय अभिभावक सहेजें',guardianStatusDefaultTitle:'अभिभावक स्थिति',guardianStatusNoAlert:'अभी तक कोई अलर्ट नहीं भेजा गया।',
+  demoSmsTitle:'डेमो SMS',demoSmsDesc:'यह प्रोटोटाइप अंतिम ज्ञात निर्देशांकों के साथ एक SMS तैयार कर सकता है। स्वतः भेजने के लिए प्रोडक्शन संस्करण में प्रमाणित बैकएंड + SMS प्रदाता आवश्यक है।',
+  prepareSmsBtn:'अभिभावक SMS तैयार करें',
+  offlineTitle:'ऑफ़लाइन मार्ग पाठ',offlineNoticeDefault:'यदि इंटरनेट न रहे, तो SafeRoute इस डिवाइस पर अंतिम सहेजा गया मार्ग सारांश रखता है।',
+  textRouteDefault:'1. अपने चुने हुए शुरुआती स्थान से आरंभ करें।\n2. गंतव्य की ओर सहेजी गई मुख्य सड़क का अनुसरण करें।\n3. अपनी पिछली सिफारिश में दिखाए गए बेहतर रोशनी वाले सार्वजनिक/परिवहन मार्ग को प्राथमिकता दें।\n4. यदि नेविगेशन डेटा उपलब्ध न हो, तो इन सहेजे गए मोड़ों का उपयोग जारी रखें और आपातकाल में 112 पर संपर्क करें।',
+  saveOfflineBtn:'ऑफ़लाइन उपयोग के लिए यह मार्ग सहेजें',
+  footerText:'Vibeathon प्रोटोटाइप · डेमो डेटा सिम्युलेटेड है। आपातकालीन नंबर आधिकारिक भारत सरकार की जानकारी से दिखाए गए हैं; ब्राउज़र से कॉल करना डिवाइस पर निर्भर करता है।',
+  finding:'सबसे सुरक्षित मार्ग खोजा जा रहा है…',
+  mapUpdated:n=>`नक्शा अपडेट हुआ — ${n} मार्ग विकल्पों की तुलना की गई, सबसे अच्छा हाइलाइट किया गया।`,
+  routeError:'लाइव नक्शा/रूटिंग सेवा तक नहीं पहुँच सके — इसके बजाय एक ऑफ़लाइन अनुमान दिखाया जा रहा है।',
+  mapStatusResult:n=>`गुलाबी ठोस रेखा = अनुशंसित मार्ग।${n>1?' धूसर डैश्ड = विचार किए गए अन्य विकल्प।':''}`,
+  offlineNoticeSaved:'मार्ग सारांश इस डिवाइस पर स्थानीय रूप से सहेजा गया।',
+  offlineNoticeSavedOffline:'मार्ग सारांश इस डिवाइस पर स्थानीय रूप से सहेजा गया (लाइव नक्शा/रूटिंग अनुपलब्ध)।',
+  offlineNoticeManualSaved:'✓ सहेजा गया। यह पाठ इंटरनेट के बिना भी उपलब्ध रहेगा।',
+  afterDarkTitle:'रात के संदर्भ वाला मार्ग',dayTitle:'संदर्भ-आधारित अनुशंसित मार्ग',
+  routeMetaOnline:(batteryPrefix,eta,n,score)=>`${batteryPrefix}ETA ~${eta} मिनट · ${n} मार्गों की तुलना की गई · सापेक्ष संदर्भ स्कोर ${score}/100`,
+  routeMetaOffline:(batteryPrefix,score)=>`${batteryPrefix}ETA ~22 मिनट · सापेक्ष संदर्भ स्कोर ${score}/100 (ऑफ़लाइन अनुमान)`,
+  batteryPrefix:'कम-बैटरी टेक्स्ट-फर्स्ट · ',
+  batteryOn:'कम बैटरी मोड चालू — स्थान रिफ्रेश न्यूनतम किया गया।',
+  batteryOff:'कम बैटरी मोड बंद — सामान्य स्थान व्यवहार।',
+  geoUnsupported:'यह ब्राउज़र लोकेशन का समर्थन नहीं करता।',
+  geoRequesting:'आपका वर्तमान स्थान मांगा जा रहा है…',
+  geoDetected:'वर्तमान स्थान मिल गया। आस-पास की आपातकालीन सेवाएं खोजी जा रही हैं…',
+  geoDenied:'लोकेशन की अनुमति नहीं दी गई। आप फिर भी डेमो मार्ग का उपयोग कर सकते हैं।',
+  fromWord:'से',toWord:'तक',currentLocWord:'वर्तमान स्थान',
+  whySummaryResult:(score,distKm,turns,after,greens,total)=>`${distKm.toFixed(1)} किमी, ${turns}-मोड़ वाले मार्ग${after?' रात में':''} के लिए ${score}/100 स्कोर: ${total} में से ${greens} सुरक्षा संकेत हरे हैं। कम मोड़ और रात में कम दूरी स्कोर बढ़ाते हैं; ज़्यादा मोड़, रात में लंबी दूरी, या कम सामुदायिक डेटा स्कोर घटाते हैं।`,
+  lightAfterNear:'रात का समय — मुख्य, बेहतर रोशनी वाले मार्गों से जहाँ संभव हो, रूट किया गया',
+  lightAfterFar:'रात का समय — मुख्य, बेहतर रोशनी वाले मार्गों से जहाँ संभव हो, रूट किया गया',
+  lightDay:'दिन की यात्रा — इस मार्ग पर प्राकृतिक दृश्यता अधिक है',
+  transportGood:'मुख्य, परिवहन-सेवा वाली सड़कों के पास रहता है',
+  transportMid:'परिवहन बिंदुओं के बीच कुछ शांत गलियों वाले हिस्से',
+  transportBad:'मुख्य परिवहन मार्गों से दूर लंबे हिस्से',
+  accessText:'पूरे रास्ते पैदल यात्री पहुंच वाली सार्वजनिक सड़कों/फुटपाथों का उपयोग करता है',
+  communityGood:'इस हिस्से के लिए हाल में कोई सुरक्षा संकेत नहीं मिला',
+  communityMid:'यहाँ कम सत्यापित संकेत हैं — सतर्क रहें और हाइलाइट किए गए मार्ग पर बने रहें',
+  communityBad:'इस हिस्से के लिए सीमित सत्यापित डेटा — अच्छी रोशनी वाली, भीड़भाड़ वाली सड़कों को प्राथमिकता दें',
+  mvStart:'शुरू करें',mvArrive:'गंतव्य पर पहुंचें',mvRoundaboutExit:n=>`राउंडअबाउट पर, निकास ${n} लें`,mvRoundabout:'राउंडअबाउट में प्रवेश करें',
+  mvUturn:'यू-टर्न लें',mvSharpLeft:'तीखा बायें मुड़ें',mvLeft:'बायें मुड़ें',mvSlightLeft:'हल्का बायें मुड़ें',
+  mvSharpRight:'तीखा दायें मुड़ें',mvRight:'दायें मुड़ें',mvSlightRight:'हल्का दायें मुड़ें',mvStraight:'सीधे जारी रखें',mvContinue:'जारी रखें',
+  ontoWord:name=>` ${name} की ओर`,
+  stepsFooter:'यदि इंटरनेट उपलब्ध न हो, तो यह सहेजा गया पाठ मार्ग अनुसरण करें और आपातकाल में 112 पर कॉल करें।',
+  fallbackSteps:(from,to)=>`1. शुरू करें: ${from}\n2. ${to} की ओर बढ़ते हुए हर जंक्शन पर आवश्यकतानुसार मुड़ें।\n3. सहेजी गई सिफारिश से बेहतर रोशनी वाले सार्वजनिक/परिवहन मार्ग को प्राथमिकता दें।\n4. गंतव्य और आस-पास की आपातकालीन सेवाओं को नज़र में रखें।\n5. यदि इंटरनेट उपलब्ध न हो, तो यह सहेजा गया पाठ मार्ग अनुसरण करें और आपातकाल में 112 पर कॉल करें।`,
+  noVerifiedResult:'ऑनलाइन कोई सत्यापित परिणाम नहीं मिला',
+  policeOfflineName:'नज़दीकी पुलिस स्टेशन (ऑफ़लाइन/डेमो)',hospitalOfflineName:'नज़दीकी अस्पताल (ऑफ़लाइन/डेमो)',
+  useOfflineData:'ऑफ़लाइन होने पर सहेजा/सत्यापित स्थानीय डेटा उपयोग करें',
+  kmAway:km=>`${km} किमी दूर`,
+  guardianSavedHtml:'<b>अभिभावक स्थिति</b><br><span class="good">✓ विश्वसनीय अभिभावक सेटिंग्स इस डिवाइस पर सहेजी गईं।</span>',
+  guardianAlertPrompt:'पहले वर्तमान स्थान प्राप्त करें ताकि SafeRoute के पास एक अंतिम ज्ञात निर्देशांक हो।',
+  guardianSmsMsg:(name,lat,lon,time)=>`SafeRoute AI अलर्ट: ${name}, डिवाइस ऑफ़लाइन/अनुपलब्ध है। अंतिम ज्ञात स्थान: https://maps.google.com/?q=${lat},${lon} . अंतिम अपडेट: ${time}। यह अंतिम सत्यापित स्थान है, लाइव स्थान नहीं।`,
+  guardianTrustedFallback:'विश्वसनीय अभिभावक',
+  guardianSmsReadyHtml:msg=>`<b>अभिभावक SMS तैयार है</b><br><span class="status">नीचे दिए संदेश में अंतिम ज्ञात स्थान है।</span><div class="textroute" style="margin-top:10px">${msg}</div>`,
+  guardianDeviceOfflineHtml:time=>`<b>⚠ डिवाइस ऑफ़लाइन</b><br><span class="warn">अंतिम ज्ञात स्थान ${time} को दर्ज किया गया। प्रोडक्शन बैकएंड यहां अभिभावक को सूचित कर सकता है।</span>`,
+  guardianBackOnlineHtml:'<b>अभिभावक स्थिति</b><br><span class="good">✓ डिवाइस फिर से ऑनलाइन है। अंतिम ज्ञात स्थान उपलब्ध है।</span>',
+ }
+};
+function tr(key,...args){ const v=I18N[lang][key]; if(v===undefined) return ''; return typeof v==='function'? v(...args): v; }
+
+let lastStatusKey=null,lastStatusArgs=[];
+function setStatus(key,...args){ lastStatusKey=key; lastStatusArgs=args; document.getElementById('locationStatus').textContent=tr(key,...args); }
+let lastMapStatusKey='mapStatusDefault',lastMapStatusArgs=[];
+function setMapStatus(key,...args){ lastMapStatusKey=key; lastMapStatusArgs=args; document.getElementById('mapStatus').textContent=tr(key,...args); }
+let lastOfflineKey='offlineNoticeDefault';
+function setOfflineNotice(key){ lastOfflineKey=key; document.getElementById('offlineNotice').textContent=tr(key); }
+
+let lastResult=null; // stores the last recommend() outcome so we can re-render on language switch
+
+function applyI18n(){
+ document.documentElement.lang=lang;
+ document.querySelectorAll('[data-i18n]').forEach(el=>{
+   const key=el.getAttribute('data-i18n');
+   if(I18N[lang][key]!==undefined) el.textContent=tr(key);
+ });
+ document.getElementById('langEN').classList.toggle('active',lang==='en');
+ document.getElementById('langHI').classList.toggle('active',lang==='hi');
+ document.getElementById('onlineState').textContent = navigator.onLine? tr('onlineLabel'):tr('offlineLabel');
+ if(lastStatusKey) document.getElementById('locationStatus').textContent=tr(lastStatusKey,...lastStatusArgs);
+ if(lastMapStatusKey) document.getElementById('mapStatus').textContent=tr(lastMapStatusKey,...lastMapStatusArgs);
+ if(lastOfflineKey) document.getElementById('offlineNotice').textContent=tr(lastOfflineKey);
+ if(lastResult) renderResultUI(lastResult);
+}
+function setLang(l){
+ if(l!==lang){ lang=l; localStorage.setItem('saferoute-lang',lang); }
+ applyI18n();
+}
+</script>
 
 <script>
 let batteryMode=false, current=null, policeNumber='100', hospitalNumber='102';
@@ -161,20 +363,20 @@ const saved = localStorage.getItem('saferoute-last-route');
 if(saved) document.getElementById('textRoute').textContent=saved;
 
 function context(btn){document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));btn.classList.add('active');}
-function toggleBattery(){batteryMode=!batteryMode;document.getElementById('battery').classList.toggle('on',batteryMode);document.getElementById('locationStatus').textContent=batteryMode?'Less battery mode ON — location refreshes are minimized.':'Less battery mode OFF — normal location behavior.';}
+function toggleBattery(){batteryMode=!batteryMode;document.getElementById('battery').classList.toggle('on',batteryMode);setStatus(batteryMode?'batteryOn':'batteryOff');}
 function callNumber(n){window.location.href='tel:'+String(n).replace(/[^\d+]/g,'');}
 function useLocation(field){
- if(!navigator.geolocation){document.getElementById('locationStatus').textContent='Location is not supported by this browser.';return;}
- document.getElementById('locationStatus').textContent='Requesting your current location…';
+ if(!navigator.geolocation){setStatus('geoUnsupported');return;}
+ setStatus('geoRequesting');
  navigator.geolocation.getCurrentPosition(pos=>{
    current={lat:pos.coords.latitude,lon:pos.coords.longitude};
    recordLastKnown(pos);
    document.getElementById(field).value='Current location ('+pos.coords.latitude.toFixed(4)+', '+pos.coords.longitude.toFixed(4)+')';
-   document.getElementById('locationStatus').textContent='Current location detected. Finding nearby emergency services…';
+   setStatus('geoDetected');
    findNearby(current.lat,current.lon);
    ensureMap();
-   setMarker(field,current.lat,current.lon,(field==='from'?'From':'To')+': current location');
- },()=>{document.getElementById('locationStatus').textContent='Location permission was not granted. You can still use the demo route.';},{enableHighAccuracy:!batteryMode,maximumAge:batteryMode?300000:60000,timeout:10000});
+   setMarker(field,current.lat,current.lon,(field==='from'?tr('fromWord'):tr('toWord'))+': '+tr('currentLocWord'));
+ },()=>{setStatus('geoDenied');},{enableHighAccuracy:!batteryMode,maximumAge:batteryMode?300000:60000,timeout:10000});
 }
 
 /* ---- Live map + best-route recommendation ---- */
@@ -225,18 +427,18 @@ function ragDot(status){return status==='green'?'🟢':status==='amber'?'🟡':'
 function ragClass(status){return status==='green'?'good':status==='amber'?'warn':'bad';}
 function buildWhy(distKm,turns,afterDark,score){
  const lightStatus=afterDark?(distKm<=2?'amber':'red'):'green';
- const lightText=afterDark?'After-dark — routed via main, better-lit corridors where possible':'Daytime travel — natural visibility is high along this route';
+ const lightText=afterDark? tr(distKm<=2?'lightAfterNear':'lightAfterFar') : tr('lightDay');
  const transportStatus=turns<=9?'green':turns<=14?'amber':'red';
- const transportText=turns<=9?'Stays close to main, transit-served roads':turns<=14?'Some quieter side-street stretches between transit points':'Longer stretches away from main transit corridors';
+ const transportText=turns<=9? tr('transportGood') : turns<=14? tr('transportMid') : tr('transportBad');
  const accessStatus='green';
- const accessText='Uses public roads/footways with pedestrian access throughout';
+ const accessText=tr('accessText');
  const communityStatus=score>=80?'green':score>=60?'amber':'red';
- const communityText=score>=80?'No recent safety signals flagged for this stretch':score>=60?'Fewer verified signals here — stay alert and stick to the highlighted path':'Limited verified data for this stretch — prefer well-lit, populated roads';
+ const communityText=score>=80? tr('communityGood') : score>=60? tr('communityMid') : tr('communityBad');
  return [
-  {icon:'💡',label:'Lighting',status:lightStatus,text:lightText},
-  {icon:'🚇',label:'Transport',status:transportStatus,text:transportText},
-  {icon:'♿',label:'Accessibility',status:accessStatus,text:accessText},
-  {icon:'👥',label:'Community',status:communityStatus,text:communityText},
+  {icon:'💡',label:tr('lightingLabel'),status:lightStatus,text:lightText},
+  {icon:'🚇',label:tr('transportLabel'),status:transportStatus,text:transportText},
+  {icon:'♿',label:tr('accessibilityLabel'),status:accessStatus,text:accessText},
+  {icon:'👥',label:tr('communityLabel'),status:communityStatus,text:communityText},
  ];
 }
 function renderWhy(items,score,distKm,turns,afterDark){
@@ -244,37 +446,36 @@ function renderWhy(items,score,distKm,turns,afterDark){
    `<div class="mini">${it.icon} <b>${it.label}</b><br><span class="${ragClass(it.status)} rag">${ragDot(it.status)} ${it.text}</span></div>`
  ).join('');
  const greens=items.filter(it=>it.status==='green').length;
- document.getElementById('whySummary').textContent=
-   `Scored ${score}/100 for a ${distKm.toFixed(1)} km, ${turns}-turn route${afterDark?' at night':''}: ${greens} of ${items.length} safety signals are green. Fewer turns and shorter after-dark distance raise the score; more turns, longer after-dark stretches, or thinner community data lower it.`;
+ document.getElementById('whySummary').textContent=tr('whySummaryResult',score,distKm,turns,afterDark,greens,items.length);
 }
 function maneuverVerb(s){
  const type=s.maneuver?.type||'continue';
  const modifier=s.maneuver?.modifier||'';
- if(type==='depart') return 'Start';
- if(type==='arrive') return 'Arrive at destination';
+ if(type==='depart') return tr('mvStart');
+ if(type==='arrive') return tr('mvArrive');
  if(type==='roundabout'||type==='rotary'){
    const exit=s.maneuver?.exit;
-   return exit?`At the roundabout, take exit ${exit}`:'Enter the roundabout';
+   return exit? tr('mvRoundaboutExit',exit) : tr('mvRoundabout');
  }
- if(modifier.includes('uturn')) return 'Make a U-turn';
- if(modifier==='sharp left') return 'Turn sharply left';
- if(modifier==='left') return 'Turn left';
- if(modifier==='slight left') return 'Turn slightly left';
- if(modifier==='sharp right') return 'Turn sharply right';
- if(modifier==='right') return 'Turn right';
- if(modifier==='slight right') return 'Turn slightly right';
- if(modifier==='straight') return 'Continue straight';
- return 'Continue';
+ if(modifier.includes('uturn')) return tr('mvUturn');
+ if(modifier==='sharp left') return tr('mvSharpLeft');
+ if(modifier==='left') return tr('mvLeft');
+ if(modifier==='slight left') return tr('mvSlightLeft');
+ if(modifier==='sharp right') return tr('mvSharpRight');
+ if(modifier==='right') return tr('mvRight');
+ if(modifier==='slight right') return tr('mvSlightRight');
+ if(modifier==='straight') return tr('mvStraight');
+ return tr('mvContinue');
 }
 function stepsToText(route){
  const steps=route.legs?.[0]?.steps||[];
  if(!steps.length) return null;
  const lines=steps.map((s,i)=>{
-   const name=s.name&&s.name.length?` onto ${s.name}`:'';
+   const name=s.name&&s.name.length? tr('ontoWord',s.name) : '';
    const verb=`${maneuverVerb(s)}${name}`;
    return `${i+1}. ${verb}`;
  });
- return lines.join('\n')+'\nIf internet is unavailable, follow this saved text route and call 112 for emergencies.';
+ return lines.join('\n')+'\n'+tr('stepsFooter');
 }
 function drawRoutes(routes,bestIdx){
  clearRoutes();
@@ -300,28 +501,28 @@ async function findNearby(lat,lon){
    const police=d.elements.filter(x=>x.tags&&x.tags.amenity==='police')[0];
    const hospital=d.elements.filter(x=>x.tags&&x.tags.amenity==='hospital')[0];
    if(police){
-     document.getElementById('policeName').textContent=police.tags.name||'Nearest police station';
-     document.getElementById('policeDistance').textContent=distance(lat,lon,policeLat(police),policeLon(police))+' km away';
+     document.getElementById('policeName').textContent=police.tags.name||tr('policeDefaultName');
+     document.getElementById('policeDistance').textContent=tr('kmAway',distance(lat,lon,policeLat(police),policeLon(police)));
      policeNumber=police.tags.phone||police.tags['contact:phone']||'100';
    } else {
-     document.getElementById('policeDistance').textContent='No verified result found online';
+     document.getElementById('policeDistance').textContent=tr('noVerifiedResult');
      policeNumber='100';
    }
    setCallLink('policeNumberLink',policeNumber);
    if(hospital){
-     document.getElementById('hospitalName').textContent=hospital.tags.name||'Nearest hospital';
-     document.getElementById('hospitalDistance').textContent=distance(lat,lon,policeLat(hospital),policeLon(hospital))+' km away';
+     document.getElementById('hospitalName').textContent=hospital.tags.name||tr('hospitalDefaultName');
+     document.getElementById('hospitalDistance').textContent=tr('kmAway',distance(lat,lon,policeLat(hospital),policeLon(hospital)));
      hospitalNumber=hospital.tags.phone||hospital.tags['contact:phone']||'102';
    } else {
-     document.getElementById('hospitalDistance').textContent='No verified result found online';
+     document.getElementById('hospitalDistance').textContent=tr('noVerifiedResult');
      hospitalNumber='102';
    }
    setCallLink('hospitalNumberLink',hospitalNumber);
  }catch(e){
-   document.getElementById('policeName').textContent='Nearest police station (offline/demo)';
-   document.getElementById('hospitalName').textContent='Nearest hospital (offline/demo)';
-   document.getElementById('policeDistance').textContent='Use saved/verified local data when offline';
-   document.getElementById('hospitalDistance').textContent='Use saved/verified local data when offline';
+   document.getElementById('policeName').textContent=tr('policeOfflineName');
+   document.getElementById('hospitalName').textContent=tr('hospitalOfflineName');
+   document.getElementById('policeDistance').textContent=tr('useOfflineData');
+   document.getElementById('hospitalDistance').textContent=tr('useOfflineData');
    policeNumber='100'; hospitalNumber='102';
    setCallLink('policeNumberLink',policeNumber);
    setCallLink('hospitalNumberLink',hospitalNumber);
@@ -329,61 +530,63 @@ async function findNearby(lat,lon){
 }
 function policeLat(x){return x.lat??x.center.lat} function policeLon(x){return x.lon??x.center.lon}
 function distance(a,b,c,d){const R=6371,p=Math.PI/180,x=(c-a)*p,y=(d-b)*p;const z=Math.sin(x/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(y/2)**2;return (R*2*Math.atan2(Math.sqrt(z),Math.sqrt(1-z))).toFixed(1);}
+
+function renderResultUI(r){
+ document.getElementById('score').textContent=r.score;
+ document.getElementById('scorebar').style.width=r.score+'%';
+ document.getElementById('routeTitle').textContent= r.after? tr('afterDarkTitle') : tr('dayTitle');
+ renderWhy(buildWhy(r.distKm,r.turns,r.after,r.score),r.score,r.distKm,r.turns,r.after);
+ const batteryPrefix=batteryMode? tr('batteryPrefix') : '';
+ if(r.online){
+   document.getElementById('routeMeta').textContent=tr('routeMetaOnline',batteryPrefix,r.etaMin,r.routesCount,r.score);
+   const stepsText=(r.best? stepsToText(r.best):null) || tr('fallbackSteps',r.fromText,r.toText);
+   document.getElementById('textRoute').textContent=stepsText;
+   localStorage.setItem('saferoute-last-route',stepsText);
+   setOfflineNotice('offlineNoticeSaved');
+   setMapStatus('mapStatusResult',r.routesCount);
+ } else {
+   document.getElementById('routeMeta').textContent=tr('routeMetaOffline',batteryPrefix,r.score);
+   const stepsText=tr('fallbackSteps',r.fromText,r.toText);
+   document.getElementById('textRoute').textContent=stepsText;
+   localStorage.setItem('saferoute-last-route',stepsText);
+   setOfflineNotice('offlineNoticeSavedOffline');
+ }
+}
+
 async function recommend(){
- const after=[...document.querySelectorAll('.chip')].find(x=>x.classList.contains('active'))?.textContent==='After dark';
+ document.getElementById('mapSection').scrollIntoView({behavior:'smooth',block:'start'});
+ const activeCtx=[...document.querySelectorAll('.chip')].find(x=>x.classList.contains('active'))?.dataset.ctx;
+ const after=activeCtx==='afterdark';
  const fromText=document.getElementById('from').value;
  const toText=document.getElementById('to').value;
- document.getElementById('locationStatus').textContent='Finding the safest route…';
+ setStatus('finding');
  try{
    ensureMap();
    const a=await geocode(fromText);
    const b=await geocode(toText);
-   setMarker('from',a.lat,a.lon,'From: '+fromText);
-   setMarker('to',b.lat,b.lon,'To: '+toText);
+   setMarker('from',a.lat,a.lon,tr('fromWord')+': '+fromText);
+   setMarker('to',b.lat,b.lon,tr('toWord')+': '+toText);
    const routes=await fetchAlternateRoutes(a,b);
    const scored=routes.map(rt=>scoreRoute(rt,after));
    let bestIdx=0; for(let i=1;i<scored.length;i++) if(scored[i]>scored[bestIdx]) bestIdx=i;
    const best=routes[bestIdx], score=scored[bestIdx];
    drawRoutes(routes,bestIdx);
-   document.getElementById('score').textContent=score;
-   document.getElementById('scorebar').style.width=score+'%';
-   document.getElementById('routeTitle').textContent=after?'After-dark context route':'Context-aware recommended route';
    const bestDistKm=best.distance/1000, bestTurns=best.legs?.[0]?.steps?.length||6;
-   renderWhy(buildWhy(bestDistKm,bestTurns,after,score),score,bestDistKm,bestTurns,after);
    const etaMin=Math.round(best.duration/60);
-   document.getElementById('routeMeta').textContent=(batteryMode?'Low-battery text-first · ':'')+`ETA ~${etaMin} min · ${routes.length} route${routes.length>1?'s':''} compared · relative context score ${score}/100`;
-   const stepsText=stepsToText(best)||`1. Start: ${fromText}
-2. Turn as needed at each junction, heading toward ${toText}.
-3. Prefer the better-lit public/transit corridor from the saved recommendation.
-4. Keep the destination and nearby emergency services visible.
-5. If internet is unavailable, follow this saved text route and call 112 for emergencies.`;
-   document.getElementById('textRoute').textContent=stepsText;
-   localStorage.setItem('saferoute-last-route',stepsText);
-   document.getElementById('offlineNotice').textContent='Route summary saved locally on this device.';
-   document.getElementById('locationStatus').textContent=`Map updated — comparing ${routes.length} route option${routes.length>1?'s':''}, best one highlighted.`;
-   document.getElementById('mapStatus').textContent=`Pink solid line = recommended route.${routes.length>1?' Grey dashed = alternative(s) considered.':''}`;
+   lastResult={after,online:true,score,distKm:bestDistKm,turns:bestTurns,etaMin,routesCount:routes.length,best,fromText,toText};
+   renderResultUI(lastResult);
+   setStatus('mapUpdated',routes.length);
  }catch(e){
    const score=after?91:87;
-   document.getElementById('score').textContent=score;
-   document.getElementById('scorebar').style.width=score+'%';
-   document.getElementById('routeTitle').textContent=after?'After-dark context route':'Context-aware recommended route';
    const estDistKm=1.6, estTurns=6;
-   renderWhy(buildWhy(estDistKm,estTurns,after,score),score,estDistKm,estTurns,after);
-   document.getElementById('routeMeta').textContent=(batteryMode?'Low-battery text-first · ':'')+'ETA ~22 min · relative context score '+score+'/100 (offline estimate)';
-   const stepsText=`1. Start: ${fromText}
-2. Turn as needed at each junction, heading toward ${toText}.
-3. Prefer the better-lit public/transit corridor from the saved recommendation.
-4. Keep the destination and nearby emergency services visible.
-5. If internet is unavailable, follow this saved text route and call 112 for emergencies.`;
-   document.getElementById('textRoute').textContent=stepsText;
-   localStorage.setItem('saferoute-last-route',stepsText);
-   document.getElementById('offlineNotice').textContent='Route summary saved locally on this device (live map/routing unavailable).';
-   document.getElementById('locationStatus').textContent='Could not reach the live map/routing service — showing an offline estimate instead.';
+   lastResult={after,online:false,score,distKm:estDistKm,turns:estTurns,fromText,toText};
+   renderResultUI(lastResult);
+   setStatus('routeError');
  }
 }
-function saveRoute(){localStorage.setItem('saferoute-last-route',document.getElementById('textRoute').textContent);document.getElementById('offlineNotice').textContent='✓ Saved. This text remains available without internet.';}
-window.addEventListener('online',()=>document.getElementById('onlineState').textContent='● Online');
-window.addEventListener('offline',()=>document.getElementById('onlineState').textContent='● Offline');
+function saveRoute(){localStorage.setItem('saferoute-last-route',document.getElementById('textRoute').textContent);setOfflineNotice('offlineNoticeManualSaved');}
+window.addEventListener('online',()=>{document.getElementById('onlineState').textContent=tr('onlineLabel');});
+window.addEventListener('offline',()=>{document.getElementById('onlineState').textContent=tr('offlineLabel');});
 
 let guardianEnabled=true;
 let lastKnown={lat:null,lon:null,time:null};
@@ -396,7 +599,7 @@ function saveGuardian(){
  const name=document.getElementById('guardianName').value.trim()||'Parent';
  const phone=document.getElementById('guardianPhone').value.trim();
  localStorage.setItem('saferoute-guardian',JSON.stringify({name,phone,enabled:guardianEnabled}));
- document.getElementById('guardianStatus').innerHTML='<b>Guardian status</b><br><span class="good">✓ Trusted guardian settings saved on this device.</span>';
+ document.getElementById('guardianStatus').innerHTML=tr('guardianSavedHtml');
 }
 function recordLastKnown(pos){
  lastKnown={lat:pos.coords.latitude,lon:pos.coords.longitude,time:new Date().toISOString()};
@@ -405,10 +608,10 @@ function recordLastKnown(pos){
 function prepareSMS(){
  const g=JSON.parse(localStorage.getItem('saferoute-guardian')||'{}');
  const l=JSON.parse(localStorage.getItem('saferoute-last-known')||'null')||lastKnown;
- if(!l.lat){alert('Get Current location first so SafeRoute has a last known coordinate.');return;}
+ if(!l.lat){alert(tr('guardianAlertPrompt'));return;}
  const time=l.time?new Date(l.time).toLocaleString():'Unknown';
- const msg=`SafeRoute AI alert: ${g.name||'Trusted guardian'}, device is offline/unreachable. Last known location: https://maps.google.com/?q=${l.lat},${l.lon} . Last update: ${time}. This is the last verified location, not a live location.`;
- document.getElementById('guardianStatus').innerHTML='<b>Guardian SMS ready</b><br><span class="status">The message below contains the last known location.</span><div class="textroute" style="margin-top:10px">'+msg.replace(/</g,'&lt;')+'</div>';
+ const msg=tr('guardianSmsMsg',g.name||tr('guardianTrustedFallback'),l.lat,l.lon,time);
+ document.getElementById('guardianStatus').innerHTML=tr('guardianSmsReadyHtml',msg.replace(/</g,'&lt;'));
  if(g.phone && /^(\+?\d[\d\s-]{7,})$/.test(g.phone)){
    const sms='sms:'+g.phone+'?body='+encodeURIComponent(msg);
    setTimeout(()=>{ window.location.href=sms; },100);
@@ -418,14 +621,15 @@ window.addEventListener('offline',()=>{
  const g=JSON.parse(localStorage.getItem('saferoute-guardian')||'{}');
  const l=JSON.parse(localStorage.getItem('saferoute-last-known')||'null');
  if(g.enabled!==false && l){
-   document.getElementById('guardianStatus').innerHTML='<b>⚠ Device offline</b><br><span class="warn">Last known location recorded at '+new Date(l.time).toLocaleString()+'. A production backend can notify the guardian here.</span>';
+   document.getElementById('guardianStatus').innerHTML=tr('guardianDeviceOfflineHtml',new Date(l.time).toLocaleString());
  }
 });
 window.addEventListener('online',()=>{
  const l=JSON.parse(localStorage.getItem('saferoute-last-known')||'null');
- if(l) document.getElementById('guardianStatus').innerHTML='<b>Guardian status</b><br><span class="good">✓ Device online again. Last known location is available.</span>';
+ if(l) document.getElementById('guardianStatus').innerHTML=tr('guardianBackOnlineHtml');
 });
 
+applyI18n();
 </script>
 </body>
 </html>
