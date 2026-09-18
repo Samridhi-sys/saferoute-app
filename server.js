@@ -12,9 +12,14 @@
  * Storage is a JSON file (data/db.json) so the prototype runs with no database
  * to install. Swap `store.js` for Postgres/Mongo when you go to production.
  */
+import dotenv from 'dotenv';
+dotenv.config(); 
+
+
 
 import express from 'express';
 import cors from 'cors';
+import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
 import jwt from 'jsonwebtoken';
 import { OAuth2Client } from 'google-auth-library';
@@ -29,7 +34,25 @@ const TRIAL_DAYS = Number(process.env.TRIAL_DAYS || 30);
 const COOKIE_NAME = 'saferoute_session';
 const IS_PROD = process.env.NODE_ENV === 'production';
 
+import path from 'path';
+
 const app = express();
+// Force fallback connection straight to the cloud link if the environment variable goes missing
+const finalURI ="mongodb+srv://admin:Khushi1234@cluster0.pbvrxl1.mongodb.net/?appName=Cluster0";
+
+mongoose.connect(process.env.MONGODB_URI || finalURI)
+
+  .then(() => console.log('✓ MongoDB connection established successfully.'))
+  .catch(err => console.error('✗ MongoDB connection error:', err));
+
+// Serves your index.html, styles, and logos from the root folder
+app.use(express.static(import.meta.dirname));
+
+// Explicitly handles the home page URL request
+app.get('/', (req, res) => {
+    res.sendFile(path.join(import.meta.dirname, 'index.html'));
+});
+
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 
@@ -83,6 +106,7 @@ function daysLeft(trialStartedAt) {
 }
 
 function describe(user) {
+  if (!user) return null;
   const left = user.plan === 'trial' ? daysLeft(user.trialStartedAt) : null;
   return {
     id: user.id,
@@ -153,14 +177,14 @@ app.post('/api/auth/trial', async (req, res) => {
     });
   } else {
     // updateUser returns the updated record — reassign, or `user` stays stale.
-    user = (await updateUser(id, { lastLoginAt: Date.now() })) || user;
+    user = (await upsertUser(id, { lastLoginAt: Date.now() })) || user;
   }
 
   const info = describe(user);
 
   // An exhausted trial must not be handed a fresh session, or the client can
   // re-enter the app by calling this endpoint again.
-  if (info.trialExpired) {
+  if (info?.trialExpired) {
     return res.status(403).json({ error: 'trial_expired', user: info });
   }
 
@@ -218,6 +242,10 @@ app.put('/api/profile', requireAuth, async (req, res) => {
 /* ------------------------------- boot ------------------------------------ */
 
 app.get('/api/health', (req, res) => res.json({ ok: true, trialDays: TRIAL_DAYS }));
+// Catch-all route to serve the frontend interface
+app.get('*', (req, res) => {
+    res.sendFile(process.cwd() + '/index.html');
+});
 
 app.listen(PORT, () => {
   console.log(`SafeRoute AI backend listening on http://localhost:${PORT}`);
