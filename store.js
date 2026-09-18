@@ -1,9 +1,5 @@
 import mongoose from 'mongoose';
 
-// Establish connection to your local database cluster
-mongoose.connect('mongodb://localhost:27017/saferoute_db')
-    .then(() => console.log('✓ MongoDB connection established successfully.'))
-    .catch(err => console.error('✗ MongoDB connection error:', err));
 
 // Define User Schema matching the system requirements
 const UserSchema = new mongoose.Schema({
@@ -33,17 +29,17 @@ export async function getUser(id) {
 }
 
 // 2. Insert or Update a user profile record securely
-export async function upsertUser(id, data) {
+export async function upsertUser({id, data}) {
     try {
         const updatedUser = await User.findOneAndUpdate(
             { id: id },
             {
                 id: id,
-                plan: data.plan,
-                trialStartedAt: data.trialStartedAt,
-                lastLoginAt: data.lastLoginAt
+                plan: data?.plan,
+                trialStartedAt: data?.trialStartedAt,
+                lastLoginAt: data?.lastLoginAt
             },
-            { upsert: true, new: true }
+            { upsert: true, returnDocument: 'after' }
         );
         return updatedUser;
     } catch (err) {
