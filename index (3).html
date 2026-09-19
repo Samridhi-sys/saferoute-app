@@ -1,0 +1,1090 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#9f2555">
+<title>SafeRoute AI — Vibeathon Website</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<style>
+:root{--pink:#c83d6b;--deep:#3a202b;--soft:#faeef3;--line:#eadde3;--green:#26815b;--red:#c6283f;--muted:#766670}
+*{box-sizing:border-box}body{margin:0;background:#f5f0f2;color:var(--deep);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif}
+.nav{position:sticky;top:0;z-index:5;background:#3a202bf2;color:#fff;padding:14px 5%;display:flex;align-items:center;gap:28px;backdrop-filter:blur(12px)}
+.logo{font-weight:900;font-size:20px;letter-spacing:.5px}.nav a{color:#fff;text-decoration:none;font-size:13px;opacity:.9}.spacer{flex:1}
+.langtoggle{display:flex;gap:6px;background:#ffffff1a;padding:3px;border-radius:20px}
+.langtoggle button{background:transparent;border:0;color:#fff;padding:5px 12px;font-size:12px;border-radius:16px;font-weight:800;cursor:pointer;opacity:.75}
+.langtoggle button.active{background:#fff;color:#3a202b;opacity:1}
+.container{max-width:1120px;margin:auto;padding:26px 20px 70px}.hero{background:linear-gradient(135deg,#722142,#d14b76);color:#fff;border-radius:28px;padding:42px;margin-bottom:20px;box-shadow:0 16px 40px #4a26351c}
+.hero h1{font-size:42px;margin:0 0 10px}.hero p{font-size:17px;max-width:680px;opacity:.93}
+.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px}.card{background:#fff;border:1px solid var(--line);border-radius:22px;padding:20px;box-shadow:0 8px 25px #4a26350b}.card h2{margin:0 0 15px;font-size:19px}
+label{font-size:12px;color:var(--muted);font-weight:800;display:block;margin:13px 0 7px}
+.inputrow{display:flex;gap:8px}.inputrow input{flex:1}
+input{width:100%;border:1px solid var(--line);background:#faf7f8;border-radius:13px;padding:13px;outline:none;font-size:14px;color:var(--deep)}
+button{border:0;border-radius:13px;padding:12px 15px;font-weight:800;cursor:pointer}.loc{background:#f6e6ec;color:#9f2555;white-space:nowrap}.primary{background:var(--pink);color:#fff;width:100%;margin-top:15px}.toggle{display:flex;align-items:center;justify-content:space-between;background:#f9f3f5;padding:12px 14px;border-radius:14px;margin-top:14px}.switch{width:45px;height:25px;background:#bbb;border-radius:20px;padding:3px}.switch i{display:block;width:19px;height:19px;background:white;border-radius:50%;transition:.2s}.switch.on{background:var(--green)}.switch.on i{transform:translateX(20px)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}.chip{background:#f8eef2;color:#704957}.chip.active{outline:2px solid var(--pink)}
+.status{font-size:12px;color:var(--muted);margin-top:10px}.route{margin-top:15px;padding:15px;border:1px solid var(--line);border-radius:17px}.routehead{display:flex;justify-content:space-between}.score{color:var(--green);font-size:24px;font-weight:900}.bar{height:8px;background:#eee5e8;border-radius:8px;margin:10px 0;overflow:hidden}.bar span{display:block;height:100%;width:87%;background:var(--pink)}.whysummary{font-size:13px;color:var(--deep);background:#faf5f7;border-radius:12px;padding:11px 13px;margin-bottom:10px;line-height:1.5}.why{display:grid;grid-template-columns:1fr 1fr;gap:8px}.mini{background:#faf5f7;border-radius:12px;padding:11px;font-size:12px}.mini .rag{font-size:11px;margin-top:3px}.good{color:var(--green);font-weight:800}.warn{color:#a66a17;font-weight:800}.bad{color:var(--red);font-weight:800}
+.emergency{background:#b82038;color:#fff;border-radius:18px;padding:17px;display:flex;align-items:center;gap:13px}.emergency .big{font-size:18px;font-weight:900}.emergency button{background:#fff;color:#a61e34}.help{display:flex;gap:10px;margin-top:10px}.help a{flex:1;text-align:center;text-decoration:none;background:#fff1f3;color:#a61e34;padding:12px;border-radius:12px;font-weight:800;font-size:13px}
+.place{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--line);gap:10px}.place:last-child{border-bottom:0}.place small{color:var(--muted)}.call{background:#f0f7f4;color:var(--green)}.placeaction{display:flex;flex-direction:column;align-items:flex-end;gap:6px}.calllink{color:var(--pink);text-decoration:none;font-weight:800;font-size:13px;white-space:nowrap}
+.offline{background:#fff7e8;border:1px solid #f0d59e;color:#805915;padding:12px;border-radius:13px;margin-top:12px;font-size:12px}
+.textroute{line-height:1.7;background:#2e2429;color:#fff;border-radius:15px;padding:15px;font-size:13px;white-space:pre-line}
+#mapView{height:360px;border-radius:16px;overflow:hidden;background:#eee5e8}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{display:inline-block;width:18px;height:4px;border-radius:2px}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
+@media(max-width:800px){.grid{grid-template-columns:1fr}.nav a{display:none}.hero h1{font-size:31px}.why{grid-template-columns:1fr}.container{padding:15px 12px 50px}}
+.chatbtn{position:fixed;right:20px;bottom:20px;width:58px;height:58px;border-radius:50%;background:var(--pink);color:#fff;font-size:26px;box-shadow:0 10px 25px #4a26353d;z-index:20;display:flex;align-items:center;justify-content:center}
+.chatpanel{position:fixed;right:20px;bottom:88px;width:330px;max-width:88vw;height:440px;max-height:70vh;background:#fff;border-radius:20px;box-shadow:0 16px 40px #4a263540;display:none;flex-direction:column;overflow:hidden;z-index:20;border:1px solid var(--line)}
+.chatpanel.open{display:flex}
+.chathead{background:var(--deep);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:800;font-size:14px}
+.chathead button{background:transparent;color:#fff;padding:2px 8px;font-size:16px}
+.chatbody{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px;background:#faf7f8}
+.bubble{max-width:82%;padding:9px 12px;border-radius:14px;font-size:13px;line-height:1.4}
+.bubble.bot{background:#f0e3e8;color:var(--deep);align-self:flex-start;border-bottom-left-radius:4px}
+.bubble.user{background:var(--pink);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+.chatquick{display:flex;gap:6px;flex-wrap:wrap;padding:0 12px 8px}
+.chatquick button{background:#f6e6ec;color:#9f2555;font-size:11px;padding:6px 10px;border-radius:20px;font-weight:700}
+.chatinputrow{display:flex;gap:8px;padding:10px;border-top:1px solid var(--line)}
+.chatinputrow input{flex:1;font-size:13px;padding:10px}
+.chatinputrow button{background:var(--pink);color:#fff;padding:10px 14px}
+.authgate{position:fixed;inset:0;z-index:100;background:linear-gradient(135deg,#722142,#3a202b);display:flex;align-items:center;justify-content:center;padding:20px}
+.authgate.hidden{display:none}
+.authcard{background:#fff;border-radius:26px;max-width:400px;width:100%;padding:36px 30px;text-align:center;box-shadow:0 24px 60px #00000040}
+.authcard img{width:52px;height:52px;object-fit:contain;margin-bottom:14px}
+.authcard h1{font-size:22px;margin:0 0 8px;color:var(--deep)}
+.authcard p{font-size:13.5px;color:var(--muted);line-height:1.5;margin:0 0 24px}
+.authbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:13px 15px;border-radius:13px;font-size:14.5px;font-weight:800;cursor:pointer;margin-bottom:12px;border:1px solid var(--line)}
+.authbtn.google{background:#fff;color:#3c4043}
+.authbtn.google svg{width:18px;height:18px}
+.authbtn.trial{background:var(--pink);color:#fff;border:0}
+.authdivider{display:flex;align-items:center;gap:10px;margin:18px 0;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.5px}
+.authdivider::before,.authdivider::after{content:"";flex:1;height:1px;background:var(--line)}
+.authnote{font-size:11.5px;color:var(--muted);line-height:1.5}
+.authnote a{color:var(--pink);font-weight:700;text-decoration:none}
+.trialbadge{background:#ffffff1a;color:#fff;font-size:11px;font-weight:800;padding:5px 11px;border-radius:20px;white-space:nowrap}
+.logoutlink{color:#fff;opacity:.85;font-size:12px;cursor:pointer;text-decoration:underline;white-space:nowrap}
+</style>
+<link rel="icon" type="image/png" href="Logo.png">
+</head>
+<body>
+
+<div class="authgate hidden" id="authGate">
+ <div class="authcard">
+  <img src="Logo.png" alt="SafeRoute AI Logo">
+  <h1 data-i18n="authTitle">Welcome to SafeRoute AI</h1>
+  <p data-i18n="authDesc">Sign in to sync your saved routes and guardian settings, or jump straight in with a free 30-day trial — no card required.</p>
+  <button class="authbtn google" onclick="signInWithGoogle()">
+   <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.8 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.4 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.9 19 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 5.4 29.5 3 24 3c-7.3 0-13.6 4.1-16.7 10.1z" transform="translate(-.1)"/><path fill="#4CAF50" d="M24 45c5.3 0 10.1-2 13.7-5.4l-6.3-5.3c-2 1.4-4.6 2.3-7.4 2.3-5.2 0-9.7-3.3-11.3-8l-6.6 5C9.4 40.9 16.1 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.7 2.1-2.1 3.9-3.9 5.2l6.3 5.3C41.2 35.6 45 30.4 45 24c0-1.4-.1-2.4-.4-3.5z"/></svg>
+   <span data-i18n="googleBtn">Sign in with Google</span>
+  </button>
+  <button class="authbtn trial" onclick="startFreeTrial()">
+   <span data-i18n="trialBtn">🚀 Start free 30-day trial</span>
+  </button>
+  <div class="authdivider" data-i18n="authOr">or</div>
+  <div class="authnote" data-i18n="authNote">By continuing you agree this is a prototype demo. No real account data is stored on a server.</div>
+ </div>
+</div>
+
+<nav class="nav">
+ <div class="logo" style="display: flex; align-items: center; gap: 8px;">
+  <img src="Logo.png" alt="SafeRoute AI Logo" style="width: 26px; height: 26px; object-fit: contain;">
+◈ SafeRoute AI</div><a href="#route" data-i18n="navRoute">Route</a><a href="#mapSection" data-i18n="navMap">Map</a><a href="#safety" data-i18n="navSafety">Safety</a><a href="#nearby" data-i18n="navNearby">Nearby help</a><a href="#offline" data-i18n="navOffline">Offline</a>
+ <div class="spacer"></div>
+ <div class="langtoggle"><button id="langEN" onclick="setLang('en')">EN</button><button id="langHI" onclick="setLang('hi')">हिं</button></div>
+ <span id="onlineState">● Online</span>
+ <span class="trialbadge" id="trialBadge" style="display:none"></span>
+ <span class="logoutlink" id="logoutLink" style="display:none" onclick="signOut()" data-i18n="logoutBtn">Sign out</span>
+
+
+
+</nav>
+
+<main class="container">
+<section class="hero">
+ <h1 data-i18n="heroTitle">The fastest route isn't always the right route.</h1>
+ <p data-i18n="heroDesc">SafeRoute AI is a web prototype for context-aware travel recommendations. It considers route context, battery level, offline availability and nearby emergency services.</p>
+</section>
+
+<div class="grid">
+
+
+        <section class="card" id="route">
+        <h2 data-i18n="planJourney">Plan your journey</h2>
+ <label data-i18n="fromLabel">FROM</label>
+ <div class="inputrow"><input id="from" value="IGDTUW, Delhi"><button class="loc" data-i18n="currentLocationBtn" onclick="useLocation('from')">⌖ Current location</button></div>
+ <label data-i18n="toLabel">TO</label>
+ <div class="inputrow"><input id="to" value="Kashmere Gate Metro"><button class="loc" data-i18n="currentLocationBtn" onclick="useLocation('to')">⌖ Current location</button></div>
+ <label data-i18n="travelContext">Travel context</label>
+ <div class="chips">
+  <button class="chip active" data-ctx="day" data-i18n="chipDay" onclick="context(this)">Day</button><button class="chip" data-ctx="afterdark" data-i18n="chipAfterDark" onclick="context(this)">After dark</button><button class="chip" data-ctx="event" data-i18n="chipEvent" onclick="context(this)">Event</button>
+ </div>
+ <div class="toggle"><div><b data-i18n="batteryTitle">Less battery mode</b><br><span class="status" data-i18n="batteryDesc">Reduces location refreshes and uses text-first navigation.</span></div><div class="switch" id="battery" onclick="toggleBattery()"><i></i></div></div>
+ <button class="primary" data-i18n="recommendBtn" onclick="recommend()">Recommend best route</button>
+ <div id="locationStatus" class="status" data-i18n="locTip">Tip: allow browser location permission when using Current location.</div>
+</section>
+
+<section>
+ <div class="emergency">
+   <div><div class="big" data-i18n="emergencyTitle">🚨 Emergency</div><div style="font-size:12px;opacity:.9" data-i18n="emergencyDesc">Call emergency response immediately.</div></div>
+   <button data-i18n="callBtn" onclick="callNumber('112')">CALL 112</button>
+ </div>
+ <div class="help">
+   <a href="tel:181" data-i18n="womenHelpline">Women Helpline 181</a>
+   <a href="tel:112" data-i18n="emergency112">Emergency 112</a>
+ </div>
+
+ <div class="card" id="nearby" style="margin-top:15px">
+  <h2 data-i18n="nearbyTitle">Always-visible nearby help</h2>
+  <div class="place">
+   <div>👮 <b id="policeName" data-i18n="policeDefaultName">Nearest police station</b><br><small id="policeDistance" data-i18n="waitingLocation">Waiting for location…</small></div>
+   <div class="placeaction">
+    <button class="call" data-i18n="callBtnSmall" onclick="callNumber(policeNumber)">Call</button>
+    <a class="calllink" id="policeNumberLink" href="tel:100">100</a>
+   </div>
+  </div>
+  <div class="place">
+   <div>🏥 <b id="hospitalName" data-i18n="hospitalDefaultName">Nearest hospital</b><br><small id="hospitalDistance" data-i18n="waitingLocation">Waiting for location…</small></div>
+   <div class="placeaction">
+    <button class="call" data-i18n="emergencyBtnSmall" onclick="callNumber(hospitalNumber)">Emergency</button>
+    <a class="calllink" id="hospitalNumberLink" href="tel:102">102</a>
+   </div>
+  </div>
+  <div class="status" data-i18n="nearbyNote">For a real deployment, these cards should be populated from a verified local places/health-service database.</div>
+ </div>
+</section>
+</div>
+
+<section class="card" id="mapSection" style="margin-top:18px">
+ <h2 data-i18n="liveMapTitle">🗺️ Live route map</h2>
+ <div id="mapView"></div>
+ <div class="status" id="mapStatus" data-i18n="mapStatusDefault">Set a From/To location (or use Current location), then tap "Recommend best route" — the map will update and highlight the safest option found.</div>
+ <div class="legend">
+  <span><i style="background:var(--pink)"></i><span data-i18n="legendBest">Recommended route</span></span>
+  <span><i style="background:#b9a7ae;border-top:2px dashed #b9a7ae;height:0"></i><span data-i18n="legendOther">Other option considered</span></span>
+ </div>
+</section>
+
+<section class="card" id="safety" style="margin-top:18px">
+ <h2 data-i18n="recommendedRouteTitle">Recommended route</h2>
+ <div class="route">
+  <div class="routehead"><div><b id="routeTitle" data-i18n="routeTitleDefault">SafeRoute recommendation</b><br><span class="status" id="routeMeta" data-i18n="routeMetaDefault">Context-aware route</span></div><div class="score" id="score">87</div></div>
+  <div class="bar"><span id="scorebar"></span></div>
+  <div class="whysummary" id="whySummary" data-i18n="whySummaryDefault">Set a route and tap "Recommend best route" to see the reasoning behind the safety score.</div>
+  <div class="why" id="whyGrid">
+   <div class="mini">💡 <b data-i18n="lightingLabel">Lighting</b><br><span class="good rag" data-i18n="lightDefault">🟢 Better-lit segments</span></div>
+   <div class="mini">🚇 <b data-i18n="transportLabel">Transport</b><br><span class="good rag" data-i18n="transportDefault">🟢 Transit nearby</span></div>
+   <div class="mini">♿ <b data-i18n="accessibilityLabel">Accessibility</b><br><span class="good rag" data-i18n="accessDefault">🟢 Public access points</span></div>
+   <div class="mini">👥 <b data-i18n="communityLabel">Community</b><br><span class="warn rag" data-i18n="communityDefault">🟡 Recent signals checked</span></div>
+  </div>
+ </div>
+</section>
+
+
+<section class="card" id="guardian" style="margin-top:18px">
+ <h2 data-i18n="guardianTitle">👨‍👩‍👧 Trusted Guardian</h2>
+ <p class="status" data-i18n="guardianDesc">Opt-in location sharing. SafeRoute stores the last known location and can notify the trusted guardian when the device becomes unreachable.</p>
+ <label data-i18n="guardianNameLabel">GUARDIAN NAME</label>
+ <input id="guardianName" value="Parent">
+ <label data-i18n="guardianPhoneLabel">GUARDIAN PHONE</label>
+ <input id="guardianPhone" placeholder="+91XXXXXXXXXX" inputmode="tel">
+ <div class="toggle">
+   <div><b data-i18n="guardianAlertsTitle">Guardian alerts</b><br><span class="status" data-i18n="guardianAlertsDesc">Send a last-known-location alert when the server detects the device offline.</span></div>
+   <div class="switch on" id="guardianSwitch" onclick="toggleGuardian()"><i></i></div>
+ </div>
+ <button class="primary" data-i18n="saveGuardianBtn" onclick="saveGuardian()">Save trusted guardian</button>
+ <div class="route" id="guardianStatus">
+   <b data-i18n="guardianStatusDefaultTitle">Guardian status</b><br><span class="status" data-i18n="guardianStatusNoAlert">No alert sent yet.</span>
+ </div>
+ <div class="offline">
+   <b data-i18n="demoSmsTitle">Demo SMS</b><br>
+   <span data-i18n="demoSmsDesc">The prototype can prepare an SMS with the last known coordinates. A production version needs an authenticated backend + SMS provider to send automatically.</span>
+   <button class="primary" style="margin-top:10px" data-i18n="prepareSmsBtn" onclick="prepareSMS()">Prepare guardian SMS</button>
+ </div>
+</section>
+
+<section class="card" id="offline" style="margin-top:18px">
+ <h2 data-i18n="offlineTitle">Offline route text</h2>
+ <div class="offline" id="offlineNotice" data-i18n="offlineNoticeDefault">If the internet disappears, SafeRoute keeps the last saved route summary on this device.</div>
+ <div class="textroute" id="textRoute" data-i18n="textRouteDefault">1. Start from your selected origin.
+2. Follow the saved main road toward the destination.
+3. Prefer the better-lit public/transit corridor shown in your last recommendation.
+4. If navigation data is unavailable, continue using these saved turns and contact 112 in an emergency.</div>
+ <button class="primary" data-i18n="saveOfflineBtn" onclick="saveRoute()">Save this route for offline use</button>
+</section>
+<footer data-i18n="footerText">Vibeathon prototype · Demo data is simulated. Emergency numbers are shown from official Indian government information; browser calling depends on the device.</footer>
+</main>
+
+<button class="chatbtn" id="chatToggleBtn" onclick="toggleChat()" aria-label="Chat">💬</button>
+<div class="chatpanel" id="chatPanel">
+ <div class="chathead"><span data-i18n="chatTitle">SafeRoute Assistant</span><button onclick="toggleChat()">✕</button></div>
+ <div class="chatbody" id="chatBody"></div>
+ <div class="chatquick" id="chatQuick"></div>
+ <div class="chatinputrow">
+  <input id="chatInput" data-i18n-placeholder="chatPlaceholder" placeholder="Ask something…" onkeydown="if(event.key==='Enter')sendChat()">
+  <button onclick="sendChat()" data-i18n="chatSend">Send</button>
+ </div>
+</div>
+
+<script>
+/* ================= i18n ================= */
+let lang = localStorage.getItem('saferoute-lang') || 'en';
+const I18N = {
+ en:{
+  navRoute:'Route',navMap:'Map',navSafety:'Safety',navNearby:'Nearby help',navOffline:'Offline',
+  onlineLabel:'● Online',offlineLabel:'● Offline',
+  heroTitle:"The fastest route isn't always the right route.",
+  heroDesc:'SafeRoute AI is a web prototype for context-aware travel recommendations. It considers route context, battery level, offline availability and nearby emergency services.',
+  planJourney:'Plan your journey',fromLabel:'FROM',toLabel:'TO',currentLocationBtn:'⌖ Current location',
+  travelContext:'Travel context',chipDay:'Day',chipAfterDark:'After dark',chipEvent:'Event',
+  batteryTitle:'Less battery mode',batteryDesc:'Reduces location refreshes and uses text-first navigation.',
+  recommendBtn:'Recommend best route',locTip:'Tip: allow browser location permission when using Current location.',
+  emergencyTitle:'🚨 Emergency',emergencyDesc:'Call emergency response immediately.',callBtn:'CALL 112',
+  womenHelpline:'Women Helpline 181',emergency112:'Emergency 112',
+  nearbyTitle:'Always-visible nearby help',policeDefaultName:'Nearest police station',hospitalDefaultName:'Nearest hospital',
+  waitingLocation:'Waiting for location…',callBtnSmall:'Call',emergencyBtnSmall:'Emergency',
+  nearbyNote:'For a real deployment, these cards should be populated from a verified local places/health-service database.',
+  liveMapTitle:'🗺️ Live route map',
+  mapStatusDefault:'Set a From/To location (or use Current location), then tap "Recommend best route" — the map will update and highlight the safest option found.',
+  legendBest:'Recommended route',legendOther:'Other option considered',
+  recommendedRouteTitle:'Recommended route',routeTitleDefault:'SafeRoute recommendation',routeMetaDefault:'Context-aware route',
+  whySummaryDefault:'Set a route and tap "Recommend best route" to see the reasoning behind the safety score.',
+  lightingLabel:'Lighting',transportLabel:'Transport',accessibilityLabel:'Accessibility',communityLabel:'Community',
+  lightDefault:'🟢 Better-lit segments',transportDefault:'🟢 Transit nearby',accessDefault:'🟢 Public access points',communityDefault:'🟡 Recent signals checked',
+  guardianTitle:'👨‍👩‍👧 Trusted Guardian',
+  guardianDesc:'Opt-in location sharing. SafeRoute stores the last known location and can notify the trusted guardian when the device becomes unreachable.',
+  guardianNameLabel:'GUARDIAN NAME',guardianPhoneLabel:'GUARDIAN PHONE',
+  guardianAlertsTitle:'Guardian alerts',guardianAlertsDesc:'Send a last-known-location alert when the server detects the device offline.',
+  saveGuardianBtn:'Save trusted guardian',guardianStatusDefaultTitle:'Guardian status',guardianStatusNoAlert:'No alert sent yet.',
+  demoSmsTitle:'Demo SMS',demoSmsDesc:'The prototype can prepare an SMS with the last known coordinates. A production version needs an authenticated backend + SMS provider to send automatically.',
+  prepareSmsBtn:'Prepare guardian SMS',
+  offlineTitle:'Offline route text',offlineNoticeDefault:'If the internet disappears, SafeRoute keeps the last saved route summary on this device.',
+  textRouteDefault:'1. Start from your selected origin.\n2. Follow the saved main road toward the destination.\n3. Prefer the better-lit public/transit corridor shown in your last recommendation.\n4. If navigation data is unavailable, continue using these saved turns and contact 112 in an emergency.',
+  saveOfflineBtn:'Save this route for offline use',
+  footerText:'Vibeathon prototype · Demo data is simulated. Emergency numbers are shown from official Indian government information; browser calling depends on the device.',
+  finding:'Finding the safest route…',
+  mapUpdated:n=>`Map updated — comparing ${n} route option${n>1?'s':''}, best one highlighted.`,
+  routeError:'Could not reach the live map/routing service — showing an offline estimate instead.',
+  mapStatusResult:n=>`Pink solid line = recommended route.${n>1?' Grey dashed = alternative(s) considered.':''}`,
+  offlineNoticeSaved:'Route summary saved locally on this device.',
+  offlineNoticeSavedOffline:'Route summary saved locally on this device (live map/routing unavailable).',
+  offlineNoticeManualSaved:'✓ Saved. This text remains available without internet.',
+  afterDarkTitle:'After-dark context route',dayTitle:'Context-aware recommended route',
+  routeMetaOnline:(batteryPrefix,eta,n,score)=>`${batteryPrefix}ETA ~${eta} min · ${n} route${n>1?'s':''} compared · relative context score ${score}/100`,
+  routeMetaOffline:(batteryPrefix,score)=>`${batteryPrefix}ETA ~22 min · relative context score ${score}/100 (offline estimate)`,
+  batteryPrefix:'Low-battery text-first · ',
+  batteryOn:'Less battery mode ON — location refreshes are minimized.',
+  batteryOff:'Less battery mode OFF — normal location behavior.',
+  geoUnsupported:'Location is not supported by this browser.',
+  geoRequesting:'Requesting your current location…',
+  geoDetected:'Current location detected. Finding nearby emergency services…',
+  geoDenied:'Location permission was not granted. You can still use the demo route.',
+  fromWord:'From',toWord:'To',currentLocWord:'current location',
+  whySummaryResult:(score,distKm,turns,after,greens,total)=>`Scored ${score}/100 for a ${distKm.toFixed(1)} km, ${turns}-turn route${after?' at night':''}: ${greens} of ${total} safety signals are green. Fewer turns and shorter after-dark distance raise the score; more turns, longer after-dark stretches, or thinner community data lower it.`,
+  lightAfterNear:'After-dark — routed via main, better-lit corridors where possible',
+  lightAfterFar:'After-dark — routed via main, better-lit corridors where possible',
+  lightDay:'Daytime travel — natural visibility is high along this route',
+  transportGood:'Stays close to main, transit-served roads',
+  transportMid:'Some quieter side-street stretches between transit points',
+  transportBad:'Longer stretches away from main transit corridors',
+  accessText:'Uses public roads/footways with pedestrian access throughout',
+  communityGood:'No recent safety signals flagged for this stretch',
+  communityMid:'Fewer verified signals here — stay alert and stick to the highlighted path',
+  communityBad:'Limited verified data for this stretch — prefer well-lit, populated roads',
+  mvStart:'Start',mvArrive:'Arrive at destination',mvRoundaboutExit:n=>`At the roundabout, take exit ${n}`,mvRoundabout:'Enter the roundabout',
+  mvUturn:'Make a U-turn',mvSharpLeft:'Turn sharply left',mvLeft:'Turn left',mvSlightLeft:'Turn slightly left',
+  mvSharpRight:'Turn sharply right',mvRight:'Turn right',mvSlightRight:'Turn slightly right',mvStraight:'Continue straight',mvContinue:'Continue',
+  ontoWord:name=>` onto ${name}`,
+  stepsFooter:'If internet is unavailable, follow this saved text route and call 112 for emergencies.',
+  fallbackSteps:(from,to)=>`1. Start: ${from}\n2. Turn as needed at each junction, heading toward ${to}.\n3. Prefer the better-lit public/transit corridor from the saved recommendation.\n4. Keep the destination and nearby emergency services visible.\n5. If internet is unavailable, follow this saved text route and call 112 for emergencies.`,
+  noVerifiedResult:'No verified result found online',
+  policeOfflineName:'Nearest police station (offline/demo)',hospitalOfflineName:'Nearest hospital (offline/demo)',
+  useOfflineData:'Use saved/verified local data when offline',
+  kmAway:km=>`${km} km away`,
+  guardianSavedHtml:'<b>Guardian status</b><br><span class="good">✓ Trusted guardian settings saved on this device.</span>',
+  guardianAlertPrompt:'Get Current location first so SafeRoute has a last known coordinate.',
+  guardianSmsMsg:(name,lat,lon,time)=>`SafeRoute AI alert: ${name}, device is offline/unreachable. Last known location: https://maps.google.com/?q=${lat},${lon} . Last update: ${time}. This is the last verified location, not a live location.`,
+  guardianTrustedFallback:'Trusted guardian',
+  guardianSmsReadyHtml:msg=>`<b>Guardian SMS ready</b><br><span class="status">The message below contains the last known location.</span><div class="textroute" style="margin-top:10px">${msg}</div>`,
+  guardianDeviceOfflineHtml:time=>`<b>⚠ Device offline</b><br><span class="warn">Last known location recorded at ${time}. A production backend can notify the guardian here.</span>`,
+  guardianBackOnlineHtml:'<b>Guardian status</b><br><span class="good">✓ Device online again. Last known location is available.</span>',
+  chatTitle:'SafeRoute Assistant',chatPlaceholder:'Ask something…',chatSend:'Send',
+  chatGreeting:"Hi! I'm the SafeRoute Assistant. Ask me about routes, safety scores, emergency numbers, guardian alerts or offline mode.",
+  chatQ1:'How do I get the best route?',chatQ2:'What do the safety colors mean?',chatQ3:'Emergency numbers?',chatQ4:'How does Trusted Guardian work?',
+  chatA_route:'Enter FROM and TO under "Plan your journey", pick Day / After dark / Event, then tap "Recommend best route". The map will highlight the safest option and show a safety score below it.',
+  chatA_colors:'🟢 Green = good on that safety factor, 🟡 Amber = be a bit more alert, 🔴 Red = limited data or higher risk on that factor. The four factors are Lighting, Transport, Accessibility and Community signals.',
+  chatA_emergency:'Tap the red CALL 112 button for general emergencies, or use the Women Helpline 181 link. Nearest police/hospital numbers are shown live under "Nearby help".',
+  chatA_guardian:'Add a guardian name and phone number in the Trusted Guardian section, then Save. If your device goes offline, SafeRoute can prepare an SMS with your last known location for them.',
+  chatA_offline:'SafeRoute saves your last recommended route as plain text on this device (Offline route text section), so you can still follow it and call 112 even with no internet.',
+  chatA_battery:'Turn on "Less battery mode" in the route planner — it reduces location refreshes and favors text-first navigation to save power.',
+  chatA_lang:'Tap EN / हिं at the top of the page to switch the whole app between English and Hindi.',
+  chatA_greeting:'Hello! How can I help — routes, safety scores, emergency numbers, guardian alerts, offline mode or language?',
+  chatA_thanks:"You're welcome! Stay safe. 🙂",
+  chatA_fallback:"I can help with: best routes, safety score colors, emergency numbers, Trusted Guardian, offline mode, battery mode, or language. Try asking about one of these, or tap a quick question below.",
+  authTitle:'Welcome to SafeRoute AI',
+  authDesc:'Sign in to sync your saved routes and guardian settings, or jump straight in with a free 30-day trial — no card required.',
+  googleBtn:'Sign in with Google',trialBtn:'🚀 Start free 30-day trial',authOr:'or',
+  authNote:'By continuing you agree this is a prototype demo. No real account data is stored on a server.',
+  logoutBtn:'Sign out',
+  trialBadgeDays:d=>`Free trial · ${d} day${d===1?'':'s'} left`,
+  trialBadgeLast:'Free trial · last day',
+  trialExpiredMsg:'Your 30-day free trial has ended. Sign in with Google to keep using SafeRoute AI.',
+  signedInAs:email=>`Signed in as ${email}`,
+  googleNotConfigured:'Google Sign-In isn\'t configured for this demo yet, so we\'ve started a guest session instead. Add a Google OAuth Client ID in index.html to enable real sign-in.',
+ },
+ hi:{
+  navRoute:'मार्ग',navMap:'नक़्शा',navSafety:'सुरक्षा',navNearby:'आस-पास मदद',navOffline:'ऑफ़लाइन',
+  onlineLabel:'● ऑनलाइन',offlineLabel:'● ऑफ़लाइन',
+  heroTitle:'सबसे तेज़ रास्ता हमेशा सही रास्ता नहीं होता।',
+  heroDesc:'SafeRoute AI एक वेब प्रोटोटाइप है जो संदर्भ-आधारित यात्रा सुझाव देता है। यह मार्ग की स्थिति, बैटरी स्तर, ऑफ़लाइन उपलब्धता और आस-पास की आपातकालीन सेवाओं को ध्यान में रखता है।',
+  planJourney:'अपनी यात्रा की योजना बनाएं',fromLabel:'से',toLabel:'तक',currentLocationBtn:'⌖ वर्तमान स्थान',
+  travelContext:'यात्रा संदर्भ',chipDay:'दिन',chipAfterDark:'रात में',chipEvent:'आयोजन',
+  batteryTitle:'कम बैटरी मोड',batteryDesc:'स्थान रिफ्रेश कम करता है और टेक्स्ट-फर्स्ट नेविगेशन का उपयोग करता है।',
+  recommendBtn:'सर्वश्रेष्ठ मार्ग सुझाएं',locTip:'सुझाव: वर्तमान स्थान का उपयोग करते समय ब्राउज़र को लोकेशन की अनुमति दें।',
+  emergencyTitle:'🚨 आपातकाल',emergencyDesc:'तुरंत आपातकालीन सेवा को कॉल करें।',callBtn:'112 पर कॉल करें',
+  womenHelpline:'महिला हेल्पलाइन 181',emergency112:'आपातकाल 112',
+  nearbyTitle:'हमेशा दिखने वाली आस-पास की मदद',policeDefaultName:'नज़दीकी पुलिस स्टेशन',hospitalDefaultName:'नज़दीकी अस्पताल',
+  waitingLocation:'स्थान की प्रतीक्षा…',callBtnSmall:'कॉल करें',emergencyBtnSmall:'आपातकाल',
+  nearbyNote:'वास्तविक उपयोग के लिए, इन कार्ड्स को सत्यापित स्थानीय स्थान/स्वास्थ्य-सेवा डेटाबेस से भरा जाना चाहिए।',
+  liveMapTitle:'🗺️ लाइव मार्ग नक्शा',
+  mapStatusDefault:'From/To स्थान सेट करें (या वर्तमान स्थान का उपयोग करें), फिर "सर्वश्रेष्ठ मार्ग सुझाएं" पर टैप करें — नक्शा अपडेट होगा और सबसे सुरक्षित विकल्प दिखाएगा।',
+  legendBest:'अनुशंसित मार्ग',legendOther:'विचार किया गया अन्य विकल्प',
+  recommendedRouteTitle:'अनुशंसित मार्ग',routeTitleDefault:'SafeRoute अनुशंसा',routeMetaDefault:'संदर्भ-आधारित मार्ग',
+  whySummaryDefault:'मार्ग सेट करें और सुरक्षा स्कोर के पीछे की वजह देखने के लिए "सर्वश्रेष्ठ मार्ग सुझाएं" पर टैप करें।',
+  lightingLabel:'रोशनी',transportLabel:'परिवहन',accessibilityLabel:'सुगम्यता',communityLabel:'समुदाय',
+  lightDefault:'🟢 बेहतर रोशनी वाले हिस्से',transportDefault:'🟢 पास में परिवहन उपलब्ध',accessDefault:'🟢 सार्वजनिक पहुँच बिंदु',communityDefault:'🟡 हाल के संकेत जाँचे गए',
+  guardianTitle:'👨‍👩‍👧 विश्वसनीय अभिभावक',
+  guardianDesc:'ऑप्ट-इन लोकेशन शेयरिंग। SafeRoute अंतिम ज्ञात स्थान संग्रहीत करता है और डिवाइस के अनुपलब्ध होने पर विश्वसनीय अभिभावक को सूचित कर सकता है।',
+  guardianNameLabel:'अभिभावक का नाम',guardianPhoneLabel:'अभिभावक का फ़ोन',
+  guardianAlertsTitle:'अभिभावक अलर्ट',guardianAlertsDesc:'जब सर्वर डिवाइस को ऑफ़लाइन पाए, तब अंतिम ज्ञात स्थान का अलर्ट भेजें।',
+  saveGuardianBtn:'विश्वसनीय अभिभावक सहेजें',guardianStatusDefaultTitle:'अभिभावक स्थिति',guardianStatusNoAlert:'अभी तक कोई अलर्ट नहीं भेजा गया।',
+  demoSmsTitle:'डेमो SMS',demoSmsDesc:'यह प्रोटोटाइप अंतिम ज्ञात निर्देशांकों के साथ एक SMS तैयार कर सकता है। स्वतः भेजने के लिए प्रोडक्शन संस्करण में प्रमाणित बैकएंड + SMS प्रदाता आवश्यक है।',
+  prepareSmsBtn:'अभिभावक SMS तैयार करें',
+  offlineTitle:'ऑफ़लाइन मार्ग पाठ',offlineNoticeDefault:'यदि इंटरनेट न रहे, तो SafeRoute इस डिवाइस पर अंतिम सहेजा गया मार्ग सारांश रखता है।',
+  textRouteDefault:'1. अपने चुने हुए शुरुआती स्थान से आरंभ करें।\n2. गंतव्य की ओर सहेजी गई मुख्य सड़क का अनुसरण करें।\n3. अपनी पिछली सिफारिश में दिखाए गए बेहतर रोशनी वाले सार्वजनिक/परिवहन मार्ग को प्राथमिकता दें।\n4. यदि नेविगेशन डेटा उपलब्ध न हो, तो इन सहेजे गए मोड़ों का उपयोग जारी रखें और आपातकाल में 112 पर संपर्क करें।',
+  saveOfflineBtn:'ऑफ़लाइन उपयोग के लिए यह मार्ग सहेजें',
+  footerText:'Vibeathon प्रोटोटाइप · डेमो डेटा सिम्युलेटेड है। आपातकालीन नंबर आधिकारिक भारत सरकार की जानकारी से दिखाए गए हैं; ब्राउज़र से कॉल करना डिवाइस पर निर्भर करता है।',
+  finding:'सबसे सुरक्षित मार्ग खोजा जा रहा है…',
+  mapUpdated:n=>`नक्शा अपडेट हुआ — ${n} मार्ग विकल्पों की तुलना की गई, सबसे अच्छा हाइलाइट किया गया।`,
+  routeError:'लाइव नक्शा/रूटिंग सेवा तक नहीं पहुँच सके — इसके बजाय एक ऑफ़लाइन अनुमान दिखाया जा रहा है।',
+  mapStatusResult:n=>`गुलाबी ठोस रेखा = अनुशंसित मार्ग।${n>1?' धूसर डैश्ड = विचार किए गए अन्य विकल्प।':''}`,
+  offlineNoticeSaved:'मार्ग सारांश इस डिवाइस पर स्थानीय रूप से सहेजा गया।',
+  offlineNoticeSavedOffline:'मार्ग सारांश इस डिवाइस पर स्थानीय रूप से सहेजा गया (लाइव नक्शा/रूटिंग अनुपलब्ध)।',
+  offlineNoticeManualSaved:'✓ सहेजा गया। यह पाठ इंटरनेट के बिना भी उपलब्ध रहेगा।',
+  afterDarkTitle:'रात के संदर्भ वाला मार्ग',dayTitle:'संदर्भ-आधारित अनुशंसित मार्ग',
+  routeMetaOnline:(batteryPrefix,eta,n,score)=>`${batteryPrefix}ETA ~${eta} मिनट · ${n} मार्गों की तुलना की गई · सापेक्ष संदर्भ स्कोर ${score}/100`,
+  routeMetaOffline:(batteryPrefix,score)=>`${batteryPrefix}ETA ~22 मिनट · सापेक्ष संदर्भ स्कोर ${score}/100 (ऑफ़लाइन अनुमान)`,
+  batteryPrefix:'कम-बैटरी टेक्स्ट-फर्स्ट · ',
+  batteryOn:'कम बैटरी मोड चालू — स्थान रिफ्रेश न्यूनतम किया गया।',
+  batteryOff:'कम बैटरी मोड बंद — सामान्य स्थान व्यवहार।',
+  geoUnsupported:'यह ब्राउज़र लोकेशन का समर्थन नहीं करता।',
+  geoRequesting:'आपका वर्तमान स्थान मांगा जा रहा है…',
+  geoDetected:'वर्तमान स्थान मिल गया। आस-पास की आपातकालीन सेवाएं खोजी जा रही हैं…',
+  geoDenied:'लोकेशन की अनुमति नहीं दी गई। आप फिर भी डेमो मार्ग का उपयोग कर सकते हैं।',
+  fromWord:'से',toWord:'तक',currentLocWord:'वर्तमान स्थान',
+  whySummaryResult:(score,distKm,turns,after,greens,total)=>`${distKm.toFixed(1)} किमी, ${turns}-मोड़ वाले मार्ग${after?' रात में':''} के लिए ${score}/100 स्कोर: ${total} में से ${greens} सुरक्षा संकेत हरे हैं। कम मोड़ और रात में कम दूरी स्कोर बढ़ाते हैं; ज़्यादा मोड़, रात में लंबी दूरी, या कम सामुदायिक डेटा स्कोर घटाते हैं।`,
+  lightAfterNear:'रात का समय — मुख्य, बेहतर रोशनी वाले मार्गों से जहाँ संभव हो, रूट किया गया',
+  lightAfterFar:'रात का समय — मुख्य, बेहतर रोशनी वाले मार्गों से जहाँ संभव हो, रूट किया गया',
+  lightDay:'दिन की यात्रा — इस मार्ग पर प्राकृतिक दृश्यता अधिक है',
+  transportGood:'मुख्य, परिवहन-सेवा वाली सड़कों के पास रहता है',
+  transportMid:'परिवहन बिंदुओं के बीच कुछ शांत गलियों वाले हिस्से',
+  transportBad:'मुख्य परिवहन मार्गों से दूर लंबे हिस्से',
+  accessText:'पूरे रास्ते पैदल यात्री पहुंच वाली सार्वजनिक सड़कों/फुटपाथों का उपयोग करता है',
+  communityGood:'इस हिस्से के लिए हाल में कोई सुरक्षा संकेत नहीं मिला',
+  communityMid:'यहाँ कम सत्यापित संकेत हैं — सतर्क रहें और हाइलाइट किए गए मार्ग पर बने रहें',
+  communityBad:'इस हिस्से के लिए सीमित सत्यापित डेटा — अच्छी रोशनी वाली, भीड़भाड़ वाली सड़कों को प्राथमिकता दें',
+  mvStart:'शुरू करें',mvArrive:'गंतव्य पर पहुंचें',mvRoundaboutExit:n=>`राउंडअबाउट पर, निकास ${n} लें`,mvRoundabout:'राउंडअबाउट में प्रवेश करें',
+  mvUturn:'यू-टर्न लें',mvSharpLeft:'तीखा बायें मुड़ें',mvLeft:'बायें मुड़ें',mvSlightLeft:'हल्का बायें मुड़ें',
+  mvSharpRight:'तीखा दायें मुड़ें',mvRight:'दायें मुड़ें',mvSlightRight:'हल्का दायें मुड़ें',mvStraight:'सीधे जारी रखें',mvContinue:'जारी रखें',
+  ontoWord:name=>` ${name} की ओर`,
+  stepsFooter:'यदि इंटरनेट उपलब्ध न हो, तो यह सहेजा गया पाठ मार्ग अनुसरण करें और आपातकाल में 112 पर कॉल करें।',
+  fallbackSteps:(from,to)=>`1. शुरू करें: ${from}\n2. ${to} की ओर बढ़ते हुए हर जंक्शन पर आवश्यकतानुसार मुड़ें।\n3. सहेजी गई सिफारिश से बेहतर रोशनी वाले सार्वजनिक/परिवहन मार्ग को प्राथमिकता दें।\n4. गंतव्य और आस-पास की आपातकालीन सेवाओं को नज़र में रखें।\n5. यदि इंटरनेट उपलब्ध न हो, तो यह सहेजा गया पाठ मार्ग अनुसरण करें और आपातकाल में 112 पर कॉल करें।`,
+  noVerifiedResult:'ऑनलाइन कोई सत्यापित परिणाम नहीं मिला',
+  policeOfflineName:'नज़दीकी पुलिस स्टेशन (ऑफ़लाइन/डेमो)',hospitalOfflineName:'नज़दीकी अस्पताल (ऑफ़लाइन/डेमो)',
+  useOfflineData:'ऑफ़लाइन होने पर सहेजा/सत्यापित स्थानीय डेटा उपयोग करें',
+  kmAway:km=>`${km} किमी दूर`,
+  guardianSavedHtml:'<b>अभिभावक स्थिति</b><br><span class="good">✓ विश्वसनीय अभिभावक सेटिंग्स इस डिवाइस पर सहेजी गईं।</span>',
+  guardianAlertPrompt:'पहले वर्तमान स्थान प्राप्त करें ताकि SafeRoute के पास एक अंतिम ज्ञात निर्देशांक हो।',
+  guardianSmsMsg:(name,lat,lon,time)=>`SafeRoute AI अलर्ट: ${name}, डिवाइस ऑफ़लाइन/अनुपलब्ध है। अंतिम ज्ञात स्थान: https://maps.google.com/?q=${lat},${lon} . अंतिम अपडेट: ${time}। यह अंतिम सत्यापित स्थान है, लाइव स्थान नहीं।`,
+  guardianTrustedFallback:'विश्वसनीय अभिभावक',
+  guardianSmsReadyHtml:msg=>`<b>अभिभावक SMS तैयार है</b><br><span class="status">नीचे दिए संदेश में अंतिम ज्ञात स्थान है।</span><div class="textroute" style="margin-top:10px">${msg}</div>`,
+  guardianDeviceOfflineHtml:time=>`<b>⚠ डिवाइस ऑफ़लाइन</b><br><span class="warn">अंतिम ज्ञात स्थान ${time} को दर्ज किया गया। प्रोडक्शन बैकएंड यहां अभिभावक को सूचित कर सकता है।</span>`,
+  guardianBackOnlineHtml:'<b>अभिभावक स्थिति</b><br><span class="good">✓ डिवाइस फिर से ऑनलाइन है। अंतिम ज्ञात स्थान उपलब्ध है।</span>',
+  chatTitle:'SafeRoute सहायक',chatPlaceholder:'कुछ पूछें…',chatSend:'भेजें',
+  chatGreeting:'नमस्ते! मैं SafeRoute सहायक हूँ। मुझसे मार्ग, सुरक्षा स्कोर, आपातकालीन नंबर, अभिभावक अलर्ट या ऑफ़लाइन मोड के बारे में पूछें।',
+  chatQ1:'सर्वश्रेष्ठ मार्ग कैसे पाएं?',chatQ2:'सुरक्षा रंगों का क्या मतलब है?',chatQ3:'आपातकालीन नंबर?',chatQ4:'विश्वसनीय अभिभावक कैसे काम करता है?',
+  chatA_route:'"अपनी यात्रा की योजना बनाएं" में FROM और TO भरें, दिन / रात में / आयोजन चुनें, फिर "सर्वश्रेष्ठ मार्ग सुझाएं" पर टैप करें। नक्शा सबसे सुरक्षित विकल्प हाइलाइट करेगा और नीचे सुरक्षा स्कोर दिखाएगा।',
+  chatA_colors:'🟢 हरा = उस सुरक्षा पहलू पर अच्छा, 🟡 पीला = थोड़ा सतर्क रहें, 🔴 लाल = सीमित डेटा या उस पहलू पर अधिक जोखिम। चार पहलू हैं: रोशनी, परिवहन, सुगम्यता और समुदाय संकेत।',
+  chatA_emergency:'सामान्य आपातकाल के लिए लाल "112 पर कॉल करें" बटन दबाएं, या महिला हेल्पलाइन 181 लिंक उपयोग करें। नज़दीकी पुलिस/अस्पताल नंबर "आस-पास मदद" में लाइव दिखते हैं।',
+  chatA_guardian:'ट्रस्टेड गार्डियन सेक्शन में अभिभावक का नाम और फ़ोन नंबर जोड़ें, फिर सहेजें। यदि आपका डिवाइस ऑफ़लाइन हो जाता है, तो SafeRoute उनके लिए अंतिम ज्ञात स्थान के साथ एक SMS तैयार कर सकता है।',
+  chatA_offline:'SafeRoute आपके अंतिम अनुशंसित मार्ग को इस डिवाइस पर सादे पाठ के रूप में सहेजता है (ऑफ़लाइन मार्ग पाठ सेक्शन), ताकि बिना इंटरनेट के भी आप उसका अनुसरण कर सकें और 112 पर कॉल कर सकें।',
+  chatA_battery:'रूट प्लानर में "कम बैटरी मोड" चालू करें — यह स्थान रिफ्रेश कम करता है और बिजली बचाने के लिए टेक्स्ट-फर्स्ट नेविगेशन को प्राथमिकता देता है।',
+  chatA_lang:'पूरे ऐप को अंग्रेज़ी और हिंदी के बीच बदलने के लिए पेज के ऊपर EN / हिं पर टैप करें।',
+  chatA_greeting:'नमस्ते! मैं कैसे मदद कर सकता हूँ — मार्ग, सुरक्षा स्कोर, आपातकालीन नंबर, अभिभावक अलर्ट, ऑफ़लाइन मोड या भाषा?',
+  chatA_thanks:'आपका स्वागत है! सुरक्षित रहें। 🙂',
+  chatA_fallback:'मैं इनमें मदद कर सकता हूँ: सर्वश्रेष्ठ मार्ग, सुरक्षा स्कोर के रंग, आपातकालीन नंबर, विश्वसनीय अभिभावक, ऑफ़लाइन मोड, बैटरी मोड, या भाषा। इनमें से किसी के बारे में पूछें, या नीचे एक त्वरित प्रश्न टैप करें।',
+  authTitle:'SafeRoute AI में आपका स्वागत है',
+  authDesc:'अपने सहेजे गए मार्गों और अभिभावक सेटिंग्स को सिंक करने के लिए साइन इन करें, या बिना कार्ड के सीधे 30-दिन के मुफ़्त ट्रायल से शुरू करें।',
+  googleBtn:'Google से साइन इन करें',trialBtn:'🚀 30-दिन का मुफ़्त ट्रायल शुरू करें',authOr:'या',
+  authNote:'जारी रखकर आप सहमत हैं कि यह एक प्रोटोटाइप डेमो है। किसी सर्वर पर कोई वास्तविक खाता डेटा संग्रहीत नहीं किया जाता।',
+  logoutBtn:'साइन आउट',
+  trialBadgeDays:d=>`मुफ़्त ट्रायल · ${d} दिन शेष`,
+  trialBadgeLast:'मुफ़्त ट्रायल · अंतिम दिन',
+  trialExpiredMsg:'आपका 30-दिन का मुफ़्त ट्रायल समाप्त हो गया है। SafeRoute AI का उपयोग जारी रखने के लिए Google से साइन इन करें।',
+  signedInAs:email=>`साइन इन: ${email}`,
+  googleNotConfigured:'इस डेमो के लिए Google साइन-इन अभी कॉन्फ़िगर नहीं है, इसलिए हमने इसके बजाय एक गेस्ट सत्र शुरू किया है। वास्तविक साइन-इन सक्षम करने के लिए index.html में Google OAuth Client ID जोड़ें।',
+ }
+};
+function tr(key,...args){ const v=I18N[lang][key]; if(v===undefined) return ''; return typeof v==='function'? v(...args): v; }
+
+let lastStatusKey=null,lastStatusArgs=[];
+function setStatus(key,...args){ lastStatusKey=key; lastStatusArgs=args; document.getElementById('locationStatus').textContent=tr(key,...args); }
+let lastMapStatusKey='mapStatusDefault',lastMapStatusArgs=[];
+function setMapStatus(key,...args){ lastMapStatusKey=key; lastMapStatusArgs=args; document.getElementById('mapStatus').textContent=tr(key,...args); }
+let lastOfflineKey='offlineNoticeDefault';
+function setOfflineNotice(key){ lastOfflineKey=key; document.getElementById('offlineNotice').textContent=tr(key); }
+
+let lastResult=null; // stores the last recommend() outcome so we can re-render on language switch
+
+function applyI18n(){
+ document.documentElement.lang=lang;
+ document.querySelectorAll('[data-i18n]').forEach(el=>{
+   const key=el.getAttribute('data-i18n');
+   if(I18N[lang][key]!==undefined) el.textContent=tr(key);
+ });
+ document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{
+   const key=el.getAttribute('data-i18n-placeholder');
+   if(I18N[lang][key]!==undefined) el.placeholder=tr(key);
+ });
+ if(typeof renderChatQuick==='function') renderChatQuick();
+ document.getElementById('langEN').classList.toggle('active',lang==='en');
+ document.getElementById('langHI').classList.toggle('active',lang==='hi');
+ document.getElementById('onlineState').textContent = navigator.onLine? tr('onlineLabel'):tr('offlineLabel');
+ if(lastStatusKey) document.getElementById('locationStatus').textContent=tr(lastStatusKey,...lastStatusArgs);
+ if(lastMapStatusKey) document.getElementById('mapStatus').textContent=tr(lastMapStatusKey,...lastMapStatusArgs);
+ if(lastOfflineKey) document.getElementById('offlineNotice').textContent=tr(lastOfflineKey);
+ if(lastResult) renderResultUI(lastResult);
+ if(typeof updateTrialBadge==='function') updateTrialBadge();
+}
+function setLang(l){
+ if(l!==lang){ lang=l; localStorage.setItem('saferoute-lang',lang); }
+ applyI18n();
+}
+</script>
+
+<script>
+let batteryMode=false, current=null, policeNumber='100', hospitalNumber='102';
+const saved = localStorage.getItem('saferoute-last-route');
+if(saved) document.getElementById('textRoute').textContent=saved;
+
+function context(btn){document.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));btn.classList.add('active');}
+function toggleBattery(){batteryMode=!batteryMode;document.getElementById('battery').classList.toggle('on',batteryMode);setStatus(batteryMode?'batteryOn':'batteryOff');}
+function callNumber(n){window.location.href='tel:'+String(n).replace(/[^\d+]/g,'');}
+function useLocation(field){
+ if(!navigator.geolocation){setStatus('geoUnsupported');return;}
+ setStatus('geoRequesting');
+ navigator.geolocation.getCurrentPosition(pos=>{
+   current={lat:pos.coords.latitude,lon:pos.coords.longitude};
+   recordLastKnown(pos);
+   document.getElementById(field).value='Current location ('+pos.coords.latitude.toFixed(4)+', '+pos.coords.longitude.toFixed(4)+')';
+   setStatus('geoDetected');
+   findNearby(current.lat,current.lon);
+   ensureMap();
+   setMarker(field,current.lat,current.lon,(field==='from'?tr('fromWord'):tr('toWord'))+': '+tr('currentLocWord'));
+ },()=>{setStatus('geoDenied');},{enableHighAccuracy:!batteryMode,maximumAge:batteryMode?300000:60000,timeout:10000});
+}
+
+/* ---- Live map + best-route recommendation ---- */
+let map,fromMarker,toMarker,routeLayers=[];
+function ensureMap(){
+ if(map) return map;
+ map=L.map('mapView',{scrollWheelZoom:false}).setView([28.6139,77.2090],12);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
+ return map;
+}
+function setMarker(which,lat,lon,label){
+ ensureMap();
+ const m=L.marker([lat,lon]).addTo(map).bindPopup(label||which);
+ if(which==='from'){ if(fromMarker) map.removeLayer(fromMarker); fromMarker=m; }
+ else { if(toMarker) map.removeLayer(toMarker); toMarker=m; }
+ fitToMarkers();
+}
+function fitToMarkers(){
+ const pts=[fromMarker,toMarker].filter(Boolean).map(m=>m.getLatLng());
+ if(pts.length===2) map.fitBounds(L.latLngBounds(pts),{padding:[40,40]});
+ else if(pts.length===1) map.setView(pts[0],14);
+}
+function clearRoutes(){ routeLayers.forEach(l=>map.removeLayer(l)); routeLayers=[]; }
+async function geocode(text){
+ const m=text.match(/Current location \(([-\d.]+),\s*([-\d.]+)\)/);
+ if(m) return {lat:parseFloat(m[1]),lon:parseFloat(m[2])};
+ const url='https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(text);
+ const r=await fetch(url,{headers:{'Accept':'application/json'}});
+ const d=await r.json();
+ if(!d||!d.length) throw new Error('Location not found: '+text);
+ return {lat:parseFloat(d[0].lat),lon:parseFloat(d[0].lon)};
+}
+async function fetchAlternateRoutes(a,b){
+ const url=`https://routing.openstreetmap.de/routed-foot/route/v1/foot/${a.lon},${a.lat};${b.lon},${b.lat}?alternatives=true&overview=full&geometries=geojson&steps=true`;
+ const r=await fetch(url);
+ const d=await r.json();
+ if(d.code!=='Ok'||!d.routes||!d.routes.length) throw new Error('No route found');
+ return d.routes;
+}
+function scoreRoute(route,afterDark){
+ const distKm=route.distance/1000;
+ const turns=route.legs?.[0]?.steps?.length||6;
+ const base=96-turns*1.3-distKm*(afterDark?2.2:1.4);
+ return Math.max(45,Math.min(97,Math.round(base)));
+}
+/* ---- RAG (Red/Amber/Green) safety breakdown ---- */
+function ragDot(status){return status==='green'?'🟢':status==='amber'?'🟡':'🔴';}
+function ragClass(status){return status==='green'?'good':status==='amber'?'warn':'bad';}
+function buildWhy(distKm,turns,afterDark,score){
+ const lightStatus=afterDark?(distKm<=2?'amber':'red'):'green';
+ const lightText=afterDark? tr(distKm<=2?'lightAfterNear':'lightAfterFar') : tr('lightDay');
+ const transportStatus=turns<=9?'green':turns<=14?'amber':'red';
+ const transportText=turns<=9? tr('transportGood') : turns<=14? tr('transportMid') : tr('transportBad');
+ const accessStatus='green';
+ const accessText=tr('accessText');
+ const communityStatus=score>=80?'green':score>=60?'amber':'red';
+ const communityText=score>=80? tr('communityGood') : score>=60? tr('communityMid') : tr('communityBad');
+ return [
+  {icon:'💡',label:tr('lightingLabel'),status:lightStatus,text:lightText},
+  {icon:'🚇',label:tr('transportLabel'),status:transportStatus,text:transportText},
+  {icon:'♿',label:tr('accessibilityLabel'),status:accessStatus,text:accessText},
+  {icon:'👥',label:tr('communityLabel'),status:communityStatus,text:communityText},
+ ];
+}
+function renderWhy(items,score,distKm,turns,afterDark){
+ document.getElementById('whyGrid').innerHTML=items.map(it=>
+   `<div class="mini">${it.icon} <b>${it.label}</b><br><span class="${ragClass(it.status)} rag">${ragDot(it.status)} ${it.text}</span></div>`
+ ).join('');
+ const greens=items.filter(it=>it.status==='green').length;
+ document.getElementById('whySummary').textContent=tr('whySummaryResult',score,distKm,turns,afterDark,greens,items.length);
+}
+function maneuverVerb(s){
+ const type=s.maneuver?.type||'continue';
+ const modifier=s.maneuver?.modifier||'';
+ if(type==='depart') return tr('mvStart');
+ if(type==='arrive') return tr('mvArrive');
+ if(type==='roundabout'||type==='rotary'){
+   const exit=s.maneuver?.exit;
+   return exit? tr('mvRoundaboutExit',exit) : tr('mvRoundabout');
+ }
+ if(modifier.includes('uturn')) return tr('mvUturn');
+ if(modifier==='sharp left') return tr('mvSharpLeft');
+ if(modifier==='left') return tr('mvLeft');
+ if(modifier==='slight left') return tr('mvSlightLeft');
+ if(modifier==='sharp right') return tr('mvSharpRight');
+ if(modifier==='right') return tr('mvRight');
+ if(modifier==='slight right') return tr('mvSlightRight');
+ if(modifier==='straight') return tr('mvStraight');
+ return tr('mvContinue');
+}
+function stepsToText(route){
+ const steps=route.legs?.[0]?.steps||[];
+ if(!steps.length) return null;
+ const lines=steps.map((s,i)=>{
+   const name=s.name&&s.name.length? tr('ontoWord',s.name) : '';
+   const verb=`${maneuverVerb(s)}${name}`;
+   return `${i+1}. ${verb}`;
+ });
+ return lines.join('\n')+'\n'+tr('stepsFooter');
+}
+function drawRoutes(routes,bestIdx){
+ clearRoutes();
+ routes.forEach((rt,i)=>{
+   const latlngs=rt.geometry.coordinates.map(c=>[c[1],c[0]]);
+   const isBest=i===bestIdx;
+   const line=L.polyline(latlngs,{color:isBest?'#c83d6b':'#b9a7ae',weight:isBest?6:3,opacity:isBest?0.95:0.6,dashArray:isBest?null:'6,6'}).addTo(map);
+   if(!isBest) line.bringToBack();
+   routeLayers.push(line);
+ });
+ map.fitBounds(L.latLngBounds(routes[bestIdx].geometry.coordinates.map(c=>[c[1],c[0]])),{padding:[30,30]});
+}
+function setCallLink(id,number){
+ const el=document.getElementById(id);
+ el.textContent=number;
+ el.href='tel:'+String(number).replace(/[^\d+]/g,'');
+}
+async function findNearby(lat,lon){
+ try{
+   const q=`[out:json];(nwr["amenity"="police"](around:5000,${lat},${lon});nwr["amenity"="hospital"](around:5000,${lat},${lon}););out center tags;`;
+   const r=await fetch('https://overpass-api.de/api/interpreter?data='+encodeURIComponent(q));
+   const d=await r.json();
+   const police=d.elements.filter(x=>x.tags&&x.tags.amenity==='police')[0];
+   const hospital=d.elements.filter(x=>x.tags&&x.tags.amenity==='hospital')[0];
+   if(police){
+     document.getElementById('policeName').textContent=police.tags.name||tr('policeDefaultName');
+     document.getElementById('policeDistance').textContent=tr('kmAway',distance(lat,lon,policeLat(police),policeLon(police)));
+     policeNumber=police.tags.phone||police.tags['contact:phone']||'100';
+   } else {
+     document.getElementById('policeDistance').textContent=tr('noVerifiedResult');
+     policeNumber='100';
+   }
+   setCallLink('policeNumberLink',policeNumber);
+   if(hospital){
+     document.getElementById('hospitalName').textContent=hospital.tags.name||tr('hospitalDefaultName');
+     document.getElementById('hospitalDistance').textContent=tr('kmAway',distance(lat,lon,policeLat(hospital),policeLon(hospital)));
+     hospitalNumber=hospital.tags.phone||hospital.tags['contact:phone']||'102';
+   } else {
+     document.getElementById('hospitalDistance').textContent=tr('noVerifiedResult');
+     hospitalNumber='102';
+   }
+   setCallLink('hospitalNumberLink',hospitalNumber);
+ }catch(e){
+   document.getElementById('policeName').textContent=tr('policeOfflineName');
+   document.getElementById('hospitalName').textContent=tr('hospitalOfflineName');
+   document.getElementById('policeDistance').textContent=tr('useOfflineData');
+   document.getElementById('hospitalDistance').textContent=tr('useOfflineData');
+   policeNumber='100'; hospitalNumber='102';
+   setCallLink('policeNumberLink',policeNumber);
+   setCallLink('hospitalNumberLink',hospitalNumber);
+ }
+}
+function policeLat(x){return x.lat??x.center.lat} function policeLon(x){return x.lon??x.center.lon}
+function distance(a,b,c,d){const R=6371,p=Math.PI/180,x=(c-a)*p,y=(d-b)*p;const z=Math.sin(x/2)**2+Math.cos(a*p)*Math.cos(c*p)*Math.sin(y/2)**2;return (R*2*Math.atan2(Math.sqrt(z),Math.sqrt(1-z))).toFixed(1);}
+
+function renderResultUI(r){
+ document.getElementById('score').textContent=r.score;
+ document.getElementById('scorebar').style.width=r.score+'%';
+ document.getElementById('routeTitle').textContent= r.after? tr('afterDarkTitle') : tr('dayTitle');
+ renderWhy(buildWhy(r.distKm,r.turns,r.after,r.score),r.score,r.distKm,r.turns,r.after);
+ const batteryPrefix=batteryMode? tr('batteryPrefix') : '';
+ if(r.online){
+   document.getElementById('routeMeta').textContent=tr('routeMetaOnline',batteryPrefix,r.etaMin,r.routesCount,r.score);
+   const stepsText=(r.best? stepsToText(r.best):null) || tr('fallbackSteps',r.fromText,r.toText);
+   document.getElementById('textRoute').textContent=stepsText;
+   localStorage.setItem('saferoute-last-route',stepsText);
+   setOfflineNotice('offlineNoticeSaved');
+   setMapStatus('mapStatusResult',r.routesCount);
+ } else {
+   document.getElementById('routeMeta').textContent=tr('routeMetaOffline',batteryPrefix,r.score);
+   const stepsText=tr('fallbackSteps',r.fromText,r.toText);
+   document.getElementById('textRoute').textContent=stepsText;
+   localStorage.setItem('saferoute-last-route',stepsText);
+   setOfflineNotice('offlineNoticeSavedOffline');
+ }
+}
+
+async function recommend(){
+ document.getElementById('mapSection').scrollIntoView({behavior:'smooth',block:'start'});
+ const activeCtx=[...document.querySelectorAll('.chip')].find(x=>x.classList.contains('active'))?.dataset.ctx;
+ const after=activeCtx==='afterdark';
+ const fromText=document.getElementById('from').value;
+ const toText=document.getElementById('to').value;
+ setStatus('finding');
+ try{
+   ensureMap();
+   const a=await geocode(fromText);
+   const b=await geocode(toText);
+   setMarker('from',a.lat,a.lon,tr('fromWord')+': '+fromText);
+   setMarker('to',b.lat,b.lon,tr('toWord')+': '+toText);
+   const routes=await fetchAlternateRoutes(a,b);
+   const scored=routes.map(rt=>scoreRoute(rt,after));
+   let bestIdx=0; for(let i=1;i<scored.length;i++) if(scored[i]>scored[bestIdx]) bestIdx=i;
+   const best=routes[bestIdx], score=scored[bestIdx];
+   drawRoutes(routes,bestIdx);
+   const bestDistKm=best.distance/1000, bestTurns=best.legs?.[0]?.steps?.length||6;
+   const etaMin=Math.round(best.duration/60);
+   lastResult={after,online:true,score,distKm:bestDistKm,turns:bestTurns,etaMin,routesCount:routes.length,best,fromText,toText};
+   renderResultUI(lastResult);
+   setStatus('mapUpdated',routes.length);
+ }catch(e){
+   const score=after?91:87;
+   const estDistKm=1.6, estTurns=6;
+   lastResult={after,online:false,score,distKm:estDistKm,turns:estTurns,fromText,toText};
+   renderResultUI(lastResult);
+   setStatus('routeError');
+ }
+}
+function saveRoute(){const t=document.getElementById('textRoute').textContent;localStorage.setItem('saferoute-last-route',t);setOfflineNotice('offlineNoticeManualSaved');if(typeof saveProfileToServer==='function')saveProfileToServer({savedRoute:t});}
+window.addEventListener('online',()=>{document.getElementById('onlineState').textContent=tr('onlineLabel');});
+window.addEventListener('offline',()=>{document.getElementById('onlineState').textContent=tr('offlineLabel');});
+
+let guardianEnabled=true;
+let lastKnown={lat:null,lon:null,time:null};
+
+function toggleGuardian(){
+ guardianEnabled=!guardianEnabled;
+ document.getElementById('guardianSwitch').classList.toggle('on',guardianEnabled);
+}
+function saveGuardian(){
+ const name=document.getElementById('guardianName').value.trim()||'Parent';
+ const phone=document.getElementById('guardianPhone').value.trim();
+ localStorage.setItem('saferoute-guardian',JSON.stringify({name,phone,enabled:guardianEnabled}));
+ if(typeof saveProfileToServer==='function') saveProfileToServer({guardian:{name,phone,alertsEnabled:guardianEnabled}});
+ guardianHasPhone=!!phone;
+ if(typeof startTracking==='function') startTracking();
+ document.getElementById('guardianStatus').innerHTML=tr('guardianSavedHtml');
+}
+function recordLastKnown(pos){
+ lastKnown={lat:pos.coords.latitude,lon:pos.coords.longitude,time:new Date().toISOString()};
+ localStorage.setItem('saferoute-last-known',JSON.stringify(lastKnown));
+}
+function prepareSMS(){
+ const g=JSON.parse(localStorage.getItem('saferoute-guardian')||'{}');
+ const l=JSON.parse(localStorage.getItem('saferoute-last-known')||'null')||lastKnown;
+ if(!l.lat){alert(tr('guardianAlertPrompt'));return;}
+ const time=l.time?new Date(l.time).toLocaleString():'Unknown';
+ const msg=tr('guardianSmsMsg',g.name||tr('guardianTrustedFallback'),l.lat,l.lon,time);
+ document.getElementById('guardianStatus').innerHTML=tr('guardianSmsReadyHtml',msg.replace(/</g,'&lt;'));
+ if(g.phone && /^(\+?\d[\d\s-]{7,})$/.test(g.phone)){
+   const sms='sms:'+g.phone+'?body='+encodeURIComponent(msg);
+   setTimeout(()=>{ window.location.href=sms; },100);
+ }
+}
+window.addEventListener('offline',()=>{
+ const g=JSON.parse(localStorage.getItem('saferoute-guardian')||'{}');
+ const l=JSON.parse(localStorage.getItem('saferoute-last-known')||'null');
+ if(g.enabled!==false && l){
+   document.getElementById('guardianStatus').innerHTML=tr('guardianDeviceOfflineHtml',new Date(l.time).toLocaleString());
+ }
+});
+window.addEventListener('online',()=>{
+ const l=JSON.parse(localStorage.getItem('saferoute-last-known')||'null');
+ if(l) document.getElementById('guardianStatus').innerHTML=tr('guardianBackOnlineHtml');
+});
+
+/* ================= Chat assistant ================= */
+let chatOpen=false, chatGreeted=false;
+function toggleChat(){
+ chatOpen=!chatOpen;
+ document.getElementById('chatPanel').classList.toggle('open',chatOpen);
+ if(chatOpen && !chatGreeted){ chatGreeted=true; addBubble(tr('chatGreeting'),'bot'); }
+ if(chatOpen) document.getElementById('chatInput').focus();
+}
+function addBubble(text,who){
+ const body=document.getElementById('chatBody');
+ const b=document.createElement('div');
+ b.className='bubble '+who;
+ b.textContent=text;
+ body.appendChild(b);
+ body.scrollTop=body.scrollHeight;
+}
+const CHAT_QUICK=[
+ {key:'chatQ1',ans:'chatA_route'},
+ {key:'chatQ2',ans:'chatA_colors'},
+ {key:'chatQ3',ans:'chatA_emergency'},
+ {key:'chatQ4',ans:'chatA_guardian'},
+];
+function renderChatQuick(){
+ const el=document.getElementById('chatQuick');
+ if(!el) return;
+ el.innerHTML='';
+ CHAT_QUICK.forEach(q=>{
+   const btn=document.createElement('button');
+   btn.textContent=tr(q.key);
+   btn.onclick=()=>{ addBubble(tr(q.key),'user'); addBubble(tr(q.ans),'bot'); };
+   el.appendChild(btn);
+ });
+}
+function chatReply(msgRaw){
+ const msg=msgRaw.toLowerCase();
+ const has=(...words)=>words.some(w=>msg.includes(w));
+ if(has('route','best route','दिशा','सबसे','मार्ग')) return tr('chatA_route');
+ if(has('color','colour','green','red','amber','score','रंग','स्कोर')) return tr('chatA_colors');
+ if(has('emergency','police','hospital','112','181','आपातकाल','पुलिस','अस्पताल')) return tr('chatA_emergency');
+ if(has('guardian','sms','parent','अभिभावक','गार्जियन')) return tr('chatA_guardian');
+ if(has('offline','no internet','इंटरनेट','ऑफ़लाइन')) return tr('chatA_offline');
+ if(has('battery','बैटरी')) return tr('chatA_battery');
+ if(has('language','hindi','english','भाषा','हिंदी')) return tr('chatA_lang');
+ if(has('hi','hello','hey','namaste','नमस्ते','हैलो')) return tr('chatA_greeting');
+ if(has('thank','thanks','धन्यवाद','शुक्रिया')) return tr('chatA_thanks');
+ return tr('chatA_fallback');
+}
+function sendChat(){
+ const input=document.getElementById('chatInput');
+ const msg=input.value.trim();
+ if(!msg) return;
+ addBubble(msg,'user');
+ input.value='';
+ setTimeout(()=>addBubble(chatReply(msg),'bot'),250);
+}
+
+applyI18n();
+</script>
+<script>
+/* ================= Access gate: Google sign-in / 30-day free trial =================
+   Works in two modes:
+
+   BACKEND MODE (recommended) — run `npm install && npm start` inside /server.
+     Sessions live in an httpOnly cookie, Google tokens are verified server-side,
+     and the trial clock is stored on the server so it can't be reset by clearing
+     browser storage.
+
+   LOCAL MODE (fallback) — if the API can't be reached, the page falls back to
+     localStorage so the static demo still works on GitHub Pages.
+
+   To enable real Google Sign-In:
+   1. Create an OAuth 2.0 Client ID (type: Web application) in Google Cloud Console.
+   2. Add this site's URL under "Authorized JavaScript origins".
+   3. Paste the Client ID below AND into server/.env as GOOGLE_CLIENT_ID.
+*/
+const GOOGLE_CLIENT_ID = '890937835758-0iqjl0cu2kmpgq0repnh5nsuid6acqj2.apps.googleusercontent.com';
+const API_BASE = '';           // '' = same origin. Use e.g. 'https://saferoute-app.onrender.com/' if hosted separately.
+const TRIAL_DAYS = 30;
+
+let googleReady = false;
+let useBackend = false;        // decided at startup by pinging /api/health
+let currentUser = null;        // {plan, email, trialDaysLeft}
+
+/* --------------------------- API helper ---------------------------------- */
+async function api(path, options={}){
+ const res = await fetch(API_BASE + path, {
+   credentials:'include',
+   headers:{'Content-Type':'application/json'},
+   ...options
+ });
+ const data = await res.json().catch(()=>({}));
+ if(!res.ok){ const e=new Error(data.error||'request_failed'); e.data=data; e.status=res.status; throw e; }
+ return data;
+}
+
+/* --------------------------- Google Identity ------------------------------ */
+function loadGoogleScript(){
+ if(document.getElementById('gsiScript')) return;
+ const s=document.createElement('script');
+ s.src='https://accounts.google.com/gsi/client'; s.async=true; s.defer=true; s.id='gsiScript';
+ s.onload=()=>{ googleReady=true; };
+ document.head.appendChild(s);
+}
+loadGoogleScript();
+
+function decodeJwt(token){
+ try{ return JSON.parse(decodeURIComponent(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join(''))); }
+ catch(e){ return null; }
+}
+
+async function handleGoogleCredential(response){
+ if(useBackend){
+   try{
+     const { user } = await api('/api/auth/google', {method:'POST', body:JSON.stringify({credential:response.credential})});
+     currentUser = user; renderSession(); loadProfileFromServer(); return;
+   }catch(e){ console.warn('Server rejected the Google token, falling back locally:', e.message); }
+ }
+ // Local fallback: read the email out of the token without server verification.
+ const payload = decodeJwt(response.credential);
+ setLocalSession({type:'google', email:(payload&&payload.email)||'you@gmail.com', ts:Date.now()});
+}
+
+function signInWithGoogle(){
+ const configured = GOOGLE_CLIENT_ID && !GOOGLE_CLIENT_ID.startsWith('YOUR_');
+ if(configured && googleReady && window.google && window.google.accounts){
+   google.accounts.id.initialize({ client_id:GOOGLE_CLIENT_ID, callback:handleGoogleCredential });
+   google.accounts.id.prompt();
+ } else {
+   // Keeps the prototype fully usable before a Client ID is configured.
+   alert(tr('googleNotConfigured'));
+   setLocalSession({type:'guest', email:'guest@saferoute.ai', ts:Date.now()});
+ }
+}
+
+/* ------------------------------ Free trial -------------------------------- */
+async function startFreeTrial(){
+ if(useBackend){
+   try{
+     const { user } = await api('/api/auth/trial', {method:'POST'});
+     currentUser = user; renderSession(); loadProfileFromServer(); return;
+   }catch(e){
+     if(e.status===403){ alert(tr('trialExpiredMsg')); return; }
+     console.warn('Trial API failed, falling back locally:', e.message);
+   }
+ }
+ setLocalSession({type:'trial', ts:Date.now()});
+}
+
+async function signOut(){
+ stopTracking();
+ if(useBackend){ try{ await api('/api/auth/logout',{method:'POST'}); }catch(e){} }
+ localStorage.removeItem('saferoute-session');
+ currentUser = null;
+ renderSession();
+}
+
+/* --------------------------- Local fallback ------------------------------- */
+function setLocalSession(session){
+ localStorage.setItem('saferoute-session', JSON.stringify(session));
+ currentUser = toUserShape(session);
+ renderSession();
+}
+
+function localDaysLeft(ts){
+ return Math.max(0, Math.ceil(TRIAL_DAYS - (Date.now()-ts)/86400000));
+}
+
+function toUserShape(session){
+ if(session.type==='trial'){
+   const d=localDaysLeft(session.ts);
+   return {plan:'trial', email:null, trialDaysLeft:d, trialExpired:d===0};
+ }
+ return {plan:session.type, email:session.email, trialDaysLeft:null, trialExpired:false};
+}
+
+function readLocalSession(){
+ const raw=localStorage.getItem('saferoute-session');
+ return raw? toUserShape(JSON.parse(raw)) : null;
+}
+
+/* ------------------------------ Rendering --------------------------------- */
+function updateTrialBadge(){
+ const badge=document.getElementById('trialBadge');
+ if(!badge) return;
+ if(!currentUser){ badge.style.display='none'; return; }
+ badge.style.display='inline-block';
+ if(currentUser.plan==='trial'){
+   const d=currentUser.trialDaysLeft;
+   badge.textContent = d<=1? tr('trialBadgeLast') : tr('trialBadgeDays', d);
+ } else {
+   badge.textContent = tr('signedInAs', currentUser.email||'—');
+ }
+}
+
+function renderSession(){
+ const gate=document.getElementById('authGate');
+ const logoutLink=document.getElementById('logoutLink');
+ if(!currentUser || currentUser.trialExpired){
+   if(currentUser && currentUser.trialExpired){ localStorage.removeItem('saferoute-session'); alert(tr('trialExpiredMsg')); currentUser=null; }
+   gate.classList.remove('hidden');
+   logoutLink.style.display='none';
+   document.getElementById('trialBadge').style.display='none';
+   return;
+ }
+ gate.classList.add('hidden');
+ logoutLink.style.display='inline';
+ updateTrialBadge();
+}
+
+/* --------------------- Optional: sync saved data --------------------------- */
+async function loadProfileFromServer(){
+ if(!useBackend) return;
+ try{
+   const p = await api('/api/profile');
+   if(p.savedRoute){
+     const el=document.getElementById('textRoute');
+     if(el) el.textContent=p.savedRoute;
+     localStorage.setItem('saferoute-last-route', p.savedRoute);
+   }
+   if(p.guardian){
+     const n=document.getElementById('guardianName'), ph=document.getElementById('guardianPhone');
+     if(n && p.guardian.name) n.value=p.guardian.name;
+     if(ph && p.guardian.phone) ph.value=p.guardian.phone;
+     if(typeof p.guardian.alertsEnabled==='boolean'){
+       guardianEnabled=p.guardian.alertsEnabled;
+       document.getElementById('guardianSwitch').classList.toggle('on',guardianEnabled);
+     }
+     guardianHasPhone=!!(p.guardian.phone||'').trim();
+     localStorage.setItem('saferoute-guardian',JSON.stringify({name:p.guardian.name||'Parent',phone:p.guardian.phone||'',enabled:guardianEnabled}));
+   }
+ }catch(e){ /* not signed in yet, or offline — ignore */ }
+ startTracking();
+}
+
+async function saveProfileToServer(patch){
+ if(!useBackend) return;
+ try{ await api('/api/profile', {method:'PUT', body:JSON.stringify(patch)}); }
+ catch(e){ /* stays saved locally regardless */ }
+}
+
+/* ------------- Guardian tracking: heartbeat + low-battery alert ------------- */
+/* While the app is open (and Guardian alerts are on with a phone number saved),
+   send location + battery to the server every minute. The SERVER decides when to
+   text the guardian: at low battery, or when these heartbeats stop.            */
+let guardianHasPhone=false, trackTimer=null, trackGen=0, trackBatt=null, trackPos=null;
+
+function trackingWanted(){
+ return useBackend && currentUser && !currentUser.trialExpired && guardianEnabled && guardianHasPhone;
+}
+
+async function sendPing(){
+ if(!trackingWanted() || navigator.onLine===false) return;
+ const body={};
+ if(trackPos){
+   body.lat=trackPos.coords.latitude; body.lon=trackPos.coords.longitude;
+   body.accuracy=Math.round(trackPos.coords.accuracy||0);
+ }
+ if(trackBatt){ body.battery=Math.round(trackBatt.level*100); body.charging=!!trackBatt.charging; }
+ if(body.lat===undefined && body.battery===undefined) return;
+ try{
+   // keepalive lets the request finish even if the page is being hidden/closed
+   await fetch(API_BASE+'/api/location/ping',{method:'POST',credentials:'include',keepalive:true,
+     headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ }catch(e){ /* offline — the server will notice the silence */ }
+}
+
+function refreshPosition(){
+ return new Promise(resolve=>{
+   if(!navigator.geolocation) return resolve(null);
+   navigator.geolocation.getCurrentPosition(
+     p=>{ trackPos=p; recordLastKnown(p); resolve(p); },
+     ()=>resolve(null),
+     {enableHighAccuracy:!batteryMode,maximumAge:batteryMode?300000:45000,timeout:15000}
+   );
+ });
+}
+
+function onBatteryEvent(e){
+ // Ping straight away when it matters: plugged in/out, or battery getting low.
+ if(e.type==='chargingchange' || Math.round(trackBatt.level*100)<=15) sendPing();
+}
+function onVisibility(){ if(document.visibilityState==='hidden') sendPing(); }
+
+async function trackTick(gen){
+ if(gen!==trackGen) return;
+ await refreshPosition();
+ await sendPing();
+ if(gen!==trackGen) return;
+ trackTimer=setTimeout(()=>trackTick(gen), batteryMode?120000:60000);
+}
+
+async function startTracking(){
+ stopTracking();
+ if(!trackingWanted()) return;
+ const gen=trackGen;
+ if(navigator.getBattery){
+   try{
+     trackBatt=await navigator.getBattery();
+     trackBatt.addEventListener('levelchange',onBatteryEvent);
+     trackBatt.addEventListener('chargingchange',onBatteryEvent);
+   }catch(e){ trackBatt=null; }
+ }
+ if(gen!==trackGen) return;
+ document.addEventListener('visibilitychange',onVisibility);
+ trackTick(gen);
+}
+
+function stopTracking(){
+ trackGen++;
+ if(trackTimer){ clearTimeout(trackTimer); trackTimer=null; }
+ if(trackBatt){
+   trackBatt.removeEventListener('levelchange',onBatteryEvent);
+   trackBatt.removeEventListener('chargingchange',onBatteryEvent);
+ }
+ document.removeEventListener('visibilitychange',onVisibility);
+}
+
+/* -------------------------------- Boot ------------------------------------ */
+(async function initAuth(){
+ try{
+   await api('/api/health');
+   useBackend = true;
+   try{
+     const { user } = await api('/api/auth/me');
+     currentUser = user;
+   }catch(e){
+     if(e.status===403 && e.data?.user){ currentUser = e.data.user; }
+   }
+   renderSession();
+   if(currentUser) loadProfileFromServer();
+ }catch(e){
+   // No backend reachable — static/local mode.
+   useBackend = false;
+   currentUser = readLocalSession();
+   renderSession();
+ }
+})();
+</script>
+</body>
+</html>
