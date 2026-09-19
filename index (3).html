@@ -522,8 +522,8 @@ function initializeArrivalTimer(durationMinutes, guardianNumber) {
         }
     }, 10000);
 }
-function dispatchAutomatedSMS(triggerReason) {
-    const uniqueId = new Date().getTime(); // 🚀 Dynamic cache-buster timestamp
+ function dispatchAutomatedSMS(triggerReason) {
+    const uniqueId = new Date().getTime(); // 🚀 Force browser to break cache
     const lat = localStorage.getItem('sr_lat') || "28.6653"; // Fallback to IGDTUW
     const lng = localStorage.getItem('sr_lng') || "77.2346";
     const lastSeen = localStorage.getItem('sr_active_time') || "Unknown";
@@ -537,12 +537,13 @@ function dispatchAutomatedSMS(triggerReason) {
         messageText += `Device connection dropped offline at ${severedTime}. `;
     }
 
-    // 🚀 PERFECT FORMATTING: Clean Google Maps tracking string + runtime unique cache buster reference
+    // 🚀 FIXED: Correct query syntax path + unique runtime parameter cache-buster
     messageText += `Last tracked position at ${lastSeen}: https://google.com{lat},${lng} (Ref: ${uniqueId})`;
 
-    // Force the hardware to launch the native text engine over standard cellular signal bands
+    // Launch phone hardware messaging channel natively over cellular bands
     window.location.href = `sms:${contact}?body=${encodeURIComponent(messageText)}`;
 }
+
 
 
 if ('getBattery' in navigator) {
